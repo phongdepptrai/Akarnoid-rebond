@@ -4,6 +4,7 @@ import com.arcade.arkanoid.ArkanoidGame;
 import com.arcade.arkanoid.engine.core.GameContext;
 import com.arcade.arkanoid.engine.input.InputManager;
 import com.arcade.arkanoid.engine.scene.Scene;
+import com.arcade.arkanoid.engine.util.FontLoader;
 import com.arcade.arkanoid.gameplay.GameplayScene;
 
 import java.awt.Color;
@@ -25,6 +26,7 @@ public class MainMenuScene extends Scene {
 
     @Override
     public void onEnter() {
+        FontLoader.loadAll();
         GameplayScene gameplay = (GameplayScene) context.getScenes().getPersistentScene(ArkanoidGame.SCENE_GAMEPLAY);
         boolean resumeAvailable = gameplay != null && gameplay.isSessionActive();
         options = resumeAvailable
