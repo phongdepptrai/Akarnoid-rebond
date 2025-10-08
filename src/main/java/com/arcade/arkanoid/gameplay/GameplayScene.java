@@ -223,6 +223,7 @@ public class GameplayScene extends Scene {
     private void launchBall() {
         awaitingLaunch = false;
         currentBallSpeed = BASE_BALL_SPEED;
+        statusMessage = "";
         setBallVelocityByAngle(Math.toRadians(random.nextDouble() * 120 - 60));
     }
 
