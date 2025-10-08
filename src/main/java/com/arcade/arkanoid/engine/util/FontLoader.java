@@ -20,7 +20,8 @@ public class FontLoader {
             "/fonts/Orbitron-SemiBold.ttf",
             "/fonts/generation.ttf",
             "/fonts/optimus.otf",
-            "/fonts/emulogic.ttf"
+            "/fonts/emulogic.ttf",
+            "/fonts/iomanoid.ttf"
         };
 
         for (String path : fonts) {
