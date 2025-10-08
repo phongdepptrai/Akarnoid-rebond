@@ -12,12 +12,15 @@ public class FontLoader {
         if (loaded) return;
 
         String[] fonts = {
-            "/Orbitron/Orbitron-Regular.ttf",
-            "/Orbitron/Orbitron-Bold.ttf",
-            "/Orbitron/Orbitron-ExtraBold.ttf",
-            "/Orbitron/Orbitron-Medium.ttf",
-            "/Orbitron/Orbitron-Black.ttf",
-            "/Orbitron/Orbitron-SemiBold.ttf"
+            "/fonts/Orbitron-Regular.ttf",
+            "/fonts/Orbitron-Bold.ttf",
+            "/fonts/Orbitron-ExtraBold.ttf",
+            "/fonts/Orbitron-Medium.ttf",
+            "/fonts/Orbitron-Black.ttf",
+            "/fonts/Orbitron-SemiBold.ttf",
+            "/fonts/generation.ttf",
+            "/fonts/optimus.otf",
+            "/fonts/emulogic.ttf"
         };
 
         for (String path : fonts) {

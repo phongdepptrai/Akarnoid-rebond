@@ -14,9 +14,9 @@ import java.awt.Graphics2D;
 import java.awt.event.KeyEvent;
 
 public class MainMenuScene extends Scene {
-    private final Font titleFont = new Font("Orbitron", Font.BOLD, 56);
-    private final Font optionFont = new Font("SansSerif", Font.BOLD, 26);
-    private final Font hintFont = new Font("SansSerif", Font.PLAIN, 16);
+    private final Font titleFont = new Font("optimus", Font.BOLD, 56);
+    private final Font optionFont = new Font("emulogic", Font.BOLD, 26);
+    private final Font hintFont = new Font("generation", Font.PLAIN, 16);
     private String[] options = new String[0];
     private int selectedIndex = 0;
 
