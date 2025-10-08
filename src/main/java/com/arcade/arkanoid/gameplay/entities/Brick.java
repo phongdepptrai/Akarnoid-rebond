@@ -5,18 +5,24 @@ import java.awt.Graphics2D;
 
 public class Brick extends AbstractEntity {
     private int hitPoints;
-    private final Color color;
+    private Color color;
     private final int scoreValue;
 
-    public Brick(double x, double y, double width, double height, int hitPoints, int scoreValue, Color color) {
+    public Brick(double x, double y, double width, double height, int hitPoints, int scoreValue) {
         super(x, y, width, height);
-        this.hitPoints = hitPoints;
+        this.hitPoints = Math.max(0, hitPoints);
         this.scoreValue = scoreValue;
-        this.color = color;
+        this.color = colorForHitPoints(this.hitPoints);
     }
 
     public void hit() {
+        if (isDestroyed()) {
+            return;
+        }
         hitPoints = Math.max(0, hitPoints - 1);
+        if (!isDestroyed()) {
+            color = colorForHitPoints(hitPoints);
+        }
     }
 
     public boolean isDestroyed() {
@@ -25,6 +31,20 @@ public class Brick extends AbstractEntity {
 
     public int getScoreValue() {
         return scoreValue;
+    }
+
+    public static Color colorForHitPoints(int strength) {
+        int normalized = Math.max(1, strength);
+        switch (normalized) {
+            case 1:
+                return new Color(0xFF7043);
+            case 2:
+                return new Color(0xFFA000);
+            case 3:
+                return new Color(0xF44336);
+            default:
+                return new Color(0x9C27B0);
+        }
     }
 
     @Override
