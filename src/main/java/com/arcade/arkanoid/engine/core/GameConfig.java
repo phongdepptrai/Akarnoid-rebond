@@ -14,7 +14,7 @@ public final class GameConfig {
     }
 
     public static GameConfig defaultConfig() {
-        return new GameConfig(960, 720, "Arkanoid Reborn", 60);
+        return new GameConfig(1280, 720, "Arkanoid Reborn", 60);
     }
 
     public int width() {
