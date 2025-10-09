@@ -154,22 +154,9 @@ public class GameplayScene extends Scene {
                 double y = verticalPadding + row * (brickHeight + gap);
                 int hitPoints = Math.max(1, value);
                 int scoreValue = 50 * hitPoints;
-                Brick brick = new Brick(x, y, brickWidth, brickHeight, hitPoints, scoreValue, brickColor(hitPoints));
+                Brick brick = new Brick(x, y, brickWidth, brickHeight, hitPoints, scoreValue);
                 bricks.add(brick);
             }
-        }
-    }
-
-    private Color brickColor(int strength) {
-        switch (strength) {
-            case 1:
-                return new Color(0xFF7043);
-            case 2:
-                return new Color(0xFFA000);
-            case 3:
-                return new Color(0xF44336);
-            default:
-                return new Color(0x9C27B0);
         }
     }
 
@@ -236,6 +223,7 @@ public class GameplayScene extends Scene {
     private void launchBall() {
         awaitingLaunch = false;
         currentBallSpeed = BASE_BALL_SPEED;
+        statusMessage = "";
         setBallVelocityByAngle(Math.toRadians(random.nextDouble() * 120 - 60));
     }
 
