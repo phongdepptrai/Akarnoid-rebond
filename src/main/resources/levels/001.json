@@ -1,0 +1,205 @@
+{
+  "id": "001",
+  "displayName": "Sugar Glass Plains",
+  "description": "Break the candy crust and rack up points before the sugar rush ends.",
+  "difficulty": "STORY",
+  "board": {
+    "columns": 10,
+    "rows": 12
+  },
+  "constraints": {
+    "timeLimitSeconds": 120.0
+  },
+  "bricks": [
+    {
+      "column": 2,
+      "row": 0,
+      "brickType": "basic:strawberry",
+      "hitPoints": 1,
+      "tags": ["color:red"]
+    },
+    {
+      "column": 3,
+      "row": 0,
+      "brickType": "basic:strawberry",
+      "hitPoints": 1,
+      "tags": ["color:red"]
+    },
+    {
+      "column": 4,
+      "row": 0,
+      "brickType": "basic:blueberry",
+      "hitPoints": 1,
+      "tags": ["color:blue"]
+    },
+    {
+      "column": 5,
+      "row": 0,
+      "brickType": "basic:lemon",
+      "hitPoints": 1,
+      "tags": ["color:yellow"]
+    },
+    {
+      "column": 6,
+      "row": 0,
+      "brickType": "basic:strawberry",
+      "hitPoints": 1,
+      "tags": ["color:red"]
+    },
+    {
+      "column": 4,
+      "row": 1,
+      "brickType": "locked:mint",
+      "hitPoints": 2,
+      "tags": ["color:green", "blocker:lock"]
+    },
+    {
+      "column": 5,
+      "row": 1,
+      "brickType": "basic:rainbow",
+      "hitPoints": 1,
+      "tags": ["color:any"]
+    },
+    {
+      "column": 2,
+      "row": 2,
+      "brickType": "basic:blueberry",
+      "hitPoints": 1,
+      "tags": ["color:blue"]
+    },
+    {
+      "column": 3,
+      "row": 2,
+      "brickType": "basic:strawberry",
+      "hitPoints": 1,
+      "tags": ["color:red"]
+    },
+    {
+      "column": 4,
+      "row": 2,
+      "brickType": "spawner:gum",
+      "hitPoints": 3,
+      "tags": ["blocker:spawner"]
+    },
+    {
+      "column": 5,
+      "row": 2,
+      "brickType": "basic:blueberry",
+      "hitPoints": 1,
+      "tags": ["color:blue"]
+    },
+    {
+      "column": 6,
+      "row": 2,
+      "brickType": "basic:strawberry",
+      "hitPoints": 1,
+      "tags": ["color:red"]
+    },
+    {
+      "column": 3,
+      "row": 4,
+      "brickType": "jelly:orange",
+      "hitPoints": 2,
+      "tags": ["color:orange", "blocker:jelly"]
+    },
+    {
+      "column": 4,
+      "row": 5,
+      "brickType": "basic:rainbow",
+      "hitPoints": 1,
+      "tags": ["color:any"]
+    },
+    {
+      "column": 5,
+      "row": 6,
+      "brickType": "basic:strawberry",
+      "hitPoints": 1,
+      "tags": ["color:red"]
+    },
+    {
+      "column": 6,
+      "row": 6,
+      "brickType": "basic:blueberry",
+      "hitPoints": 1,
+      "tags": ["color:blue"]
+    }
+  ],
+  "objectives": [
+    {
+      "id": "clear-red-bricks",
+      "type": "clear-tagged-bricks",
+      "target": {
+        "amount": 6,
+        "trackedTags": ["color:red"]
+      },
+      "optional": false,
+      "tags": ["primary", "color-clear"]
+    },
+    {
+      "id": "reach-score-600",
+      "type": "score",
+      "target": {
+        "amount": 600
+      },
+      "optional": false,
+      "tags": ["primary", "score"]
+    },
+    {
+      "id": "clear-blue-bonus",
+      "type": "clear-tagged-bricks",
+      "target": {
+        "amount": 4,
+        "trackedTags": ["color:blue"]
+      },
+      "optional": true,
+      "tags": ["bonus", "color-clear"]
+    }
+  ],
+  "boosters": [
+    {
+      "boosterId": "booster:wide-paddle",
+      "quantity": 1
+    },
+    {
+      "boosterId": "booster:aim-line",
+      "quantity": 2
+    }
+  ],
+  "rewardTiers": [
+    {
+      "stars": 1,
+      "rewards": [
+        {
+          "type": "currency:coins",
+          "quantity": 50
+        }
+      ]
+    },
+    {
+      "stars": 2,
+      "rewards": [
+        {
+          "type": "currency:coins",
+          "quantity": 90
+        },
+        {
+          "type": "booster:wide-paddle",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "stars": 3,
+      "rewards": [
+        {
+          "type": "currency:coins",
+          "quantity": 150
+        },
+        {
+          "type": "booster:rainbow-ball",
+          "quantity": 1
+        }
+      ]
+    }
+  ]
+}

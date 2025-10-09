@@ -58,6 +58,7 @@ public class GameLoop implements Runnable {
             while (accumulator >= targetFrameTime) {
                 double deltaSeconds = targetFrameTime / 1_000_000_000.0;
                 scenes.update(deltaSeconds);
+                context.getInput().clearFrameJustPressed();
                 accumulator -= targetFrameTime;
             }
 

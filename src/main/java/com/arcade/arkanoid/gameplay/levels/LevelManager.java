@@ -1,43 +1,20 @@
 package com.arcade.arkanoid.gameplay.levels;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class LevelManager {
-    private final List<LevelDefinition> levels = new ArrayList<>();
+    private final List<LevelDefinition> levels;
     private int currentIndex;
 
     public LevelManager() {
-        levels.add(new LevelDefinition("Training Grounds", parse(
-                "1111111111",
-                "1000000001",
-                "1111111111"
-        )));
-        levels.add(new LevelDefinition("Steel Curtain", parse(
-                "2222222222",
-                "2111111112",
-                "2000000002",
-                "2111111112",
-                "2222222222"
-        )));
-        levels.add(new LevelDefinition("Diamond Maze", parse(
-                "0033333300",
-                "0333333330",
-                "3332223333",
-                "0333333330",
-                "0033333300"
-        )));
+        this(new JsonLevelRepository().loadAll());
     }
 
-    private int[][] parse(String... rows) {
-        int[][] layout = new int[rows.length][rows[0].length()];
-        for (int row = 0; row < rows.length; row++) {
-            char[] chars = rows[row].toCharArray();
-            for (int col = 0; col < chars.length; col++) {
-                layout[row][col] = Character.digit(chars[col], 10);
-            }
+    LevelManager(List<LevelDefinition> levels) {
+        if (levels == null || levels.isEmpty()) {
+            throw new IllegalArgumentException("At least one level definition is required");
         }
-        return layout;
+        this.levels = List.copyOf(levels);
     }
 
     public LevelDefinition current() {
@@ -56,5 +33,36 @@ public class LevelManager {
 
     public void reset() {
         currentIndex = 0;
+    }
+
+    public int totalLevels() {
+        return levels.size();
+    }
+
+    public boolean selectLevel(String levelId) {
+        int index = findIndex(levelId);
+        if (index >= 0) {
+            currentIndex = index;
+            return true;
+        }
+        return false;
+    }
+
+    public void resetToLevel(String levelId) {
+        if (!selectLevel(levelId)) {
+            reset();
+        }
+    }
+
+    private int findIndex(String levelId) {
+        if (levelId == null || levelId.isBlank()) {
+            return -1;
+        }
+        for (int i = 0; i < levels.size(); i++) {
+            if (levelId.equals(levels.get(i).id())) {
+                return i;
+            }
+        }
+        return -1;
     }
 }

@@ -31,6 +31,10 @@ public class InputManager implements KeyListener {
         Arrays.fill(frameJustPressed, false);
     }
 
+    public synchronized void clearFrameJustPressed() {
+        Arrays.fill(frameJustPressed, false);
+    }
+
     @Override
     public void keyTyped(KeyEvent e) {
         // not used

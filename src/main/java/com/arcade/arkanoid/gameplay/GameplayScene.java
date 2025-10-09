@@ -11,8 +11,12 @@ import com.arcade.arkanoid.gameplay.entities.Paddle;
 import com.arcade.arkanoid.gameplay.entities.PowerUp;
 import com.arcade.arkanoid.gameplay.levels.LevelDefinition;
 import com.arcade.arkanoid.gameplay.levels.LevelManager;
+import com.arcade.arkanoid.gameplay.objectives.ObjectiveEngine;
+import com.arcade.arkanoid.gameplay.objectives.StandardObjectiveEngine;
 import com.arcade.arkanoid.gameplay.system.HudRenderer;
+import com.arcade.arkanoid.localization.LocalizationService;
 import com.arcade.arkanoid.menu.PauseScene;
+import com.arcade.arkanoid.profile.PlayerProfile;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -36,10 +40,12 @@ public class GameplayScene extends Scene {
     private static final double POWERUP_DROP_CHANCE = 0.15;
 
     private final LevelManager levelManager = new LevelManager();
-    private final HudRenderer hudRenderer = new HudRenderer();
+    private final HudRenderer hudRenderer;
     private final Random random = new Random();
     private final List<Brick> bricks = new ArrayList<>();
     private final List<PowerUp> powerUps = new ArrayList<>();
+    private final ObjectiveEngine objectiveEngine = new StandardObjectiveEngine();
+    private final ObjectiveEngine.Listener objectiveListener = new SceneObjectiveListener();
 
     private Paddle paddle;
     private Ball ball;
@@ -52,9 +58,13 @@ public class GameplayScene extends Scene {
     private boolean stageCleared = false;
     private boolean gameOver = false;
     private String statusMessage = "";
+    private LevelDefinition activeLevel;
+    private final LocalizationService localization;
 
     public GameplayScene(GameContext context) {
         super(context);
+        this.localization = context.getLocalizationService();
+        this.hudRenderer = new HudRenderer(localization);
     }
 
     @Override
@@ -96,7 +106,8 @@ public class GameplayScene extends Scene {
     private void startNewGame() {
         score = 0;
         lives = 3;
-        levelManager.reset();
+        PlayerProfile profile = context.getProfileManager().getActiveProfile();
+        levelManager.resetToLevel(profile.getCurrentLevelId());
         loadLevel();
     }
 
@@ -106,7 +117,10 @@ public class GameplayScene extends Scene {
         awaitingLaunch = true;
         stageCleared = false;
         gameOver = false;
-        statusMessage = "";
+        statusMessage = localization.translate("gameplay.message.ready");
+        activeLevel = levelManager.current();
+        objectiveEngine.bind(activeLevel, objectiveListener);
+        objectiveEngine.resetProgress();
         paddle = new Paddle(
                 (context.getConfig().width() - BASE_PADDLE_WIDTH) / 2.0,
                 context.getConfig().height() - PADDLE_Y_OFFSET,
@@ -118,7 +132,7 @@ public class GameplayScene extends Scene {
         ball = new Ball(0, 0, BALL_SIZE, Color.WHITE);
         currentBallSpeed = BASE_BALL_SPEED;
         resetBall();
-        buildBricks(levelManager.current());
+        buildBricks(activeLevel);
     }
 
     private void resetBall() {
@@ -132,9 +146,9 @@ public class GameplayScene extends Scene {
     }
 
     private void buildBricks(LevelDefinition definition) {
-        int cols = definition.getCols();
-        int rows = definition.getRows();
-        if (cols == 0 || rows == 0) {
+        int cols = definition.columns();
+        int rows = definition.rows();
+        if (cols <= 0 || rows <= 0) {
             return;
         }
         double horizontalPadding = 50;
@@ -144,20 +158,31 @@ public class GameplayScene extends Scene {
         double brickWidth = (availableWidth - (cols - 1) * gap) / cols;
         double brickHeight = 24;
 
-        for (int row = 0; row < rows; row++) {
-            for (int col = 0; col < cols; col++) {
-                int value = definition.valueAt(row, col);
-                if (value <= 0) {
-                    continue;
-                }
-                double x = horizontalPadding + col * (brickWidth + gap);
-                double y = verticalPadding + row * (brickHeight + gap);
-                int hitPoints = Math.max(1, value);
-                int scoreValue = 50 * hitPoints;
-                Brick brick = new Brick(x, y, brickWidth, brickHeight, hitPoints, scoreValue);
-                bricks.add(brick);
+        definition.bricks().forEach(blueprint -> {
+            int column = blueprint.column();
+            int row = blueprint.row();
+            if (column < 0 || column >= cols || row < 0 || row >= rows) {
+                return;
             }
-        }
+            double x = horizontalPadding + column * (brickWidth + gap);
+            double y = verticalPadding + row * (brickHeight + gap);
+            int hitPoints = Math.max(1, blueprint.hitPoints());
+            int scoreValue = 50 * hitPoints;
+            Brick brick = new Brick(
+                    x,
+                    y,
+                    brickWidth,
+                    brickHeight,
+                    hitPoints,
+                    scoreValue,
+                    column,
+                    row,
+                    blueprint.brickType(),
+                    blueprint.tags(),
+                    blueprint.modifiers()
+            );
+            bricks.add(brick);
+        });
     }
 
     @Override
@@ -197,9 +222,18 @@ public class GameplayScene extends Scene {
 
         updatePowerUps(deltaTime);
 
-        if (!gameOver && bricks.stream().allMatch(Brick::isDestroyed)) {
+        objectiveEngine.update(deltaTime);
+
+        if (!gameOver && !stageCleared && isLevelComplete()) {
             handleLevelCompletion();
         }
+    }
+
+    private boolean isLevelComplete() {
+        if (objectiveEngine.arePrimaryObjectivesMet()) {
+            return true;
+        }
+        return bricks.stream().allMatch(Brick::isDestroyed);
     }
 
     private void handleMovementInput(InputManager input) {
@@ -307,6 +341,13 @@ public class GameplayScene extends Scene {
                 brick.hit();
                 if (brick.isDestroyed()) {
                     score += brick.getScoreValue();
+                    objectiveEngine.handleEvent(new ObjectiveEngine.ScoreAwardedEvent(brick.getScoreValue()));
+                    objectiveEngine.handleEvent(new ObjectiveEngine.BrickClearedEvent(
+                            brick.getGridColumn(),
+                            brick.getGridRow(),
+                            brick.getBlueprintType(),
+                            brick.getTags()
+                    ));
                     maybeSpawnPowerUp(brick);
                 }
                 normalizeBallSpeed();
@@ -366,14 +407,23 @@ public class GameplayScene extends Scene {
         }
         stageCleared = true;
         awaitingLaunch = true;
+        PlayerProfile profile = context.getProfileManager().getActiveProfile();
+        profile.markLevelCompleted(activeLevel.id());
+        context.getProfileManager().saveProfile();
+        profile.unlockLevel(activeLevel.id());
         if (levelManager.hasNext()) {
             levelManager.advance();
-            statusMessage = "Stage cleared! Press SPACE to launch.";
-            buildBricks(levelManager.current());
-            resetBall();
+            LevelDefinition nextLevel = levelManager.current();
+            profile.unlockLevel(nextLevel.id());
+            profile.setCurrentLevelId(nextLevel.id());
+            context.getProfileManager().saveProfile();
+            loadLevel();
+            statusMessage = localization.translate("gameplay.message.stageCleared");
         } else {
+            profile.setCurrentLevelId(activeLevel.id());
+            context.getProfileManager().saveProfile();
             gameOver = true;
-            statusMessage = "Victory! Press ENTER for a new game or ESC to quit.";
+            statusMessage = localization.translate("gameplay.message.victory");
         }
     }
 
@@ -381,9 +431,9 @@ public class GameplayScene extends Scene {
         lives--;
         if (lives <= 0) {
             gameOver = true;
-            statusMessage = "Game over. Press ENTER to restart or ESC for menu.";
+            statusMessage = localization.translate("gameplay.message.gameOver");
         } else {
-            statusMessage = "Life lost! Press SPACE to continue.";
+            statusMessage = localization.translate("gameplay.message.lifeLost");
             paddle.setWidth(BASE_PADDLE_WIDTH);
             currentBallSpeed = BASE_BALL_SPEED;
             resetBall();
@@ -401,7 +451,8 @@ public class GameplayScene extends Scene {
     @Override
     public void render(Graphics2D graphics) {
         drawBackground(graphics);
-        hudRenderer.renderHud(graphics, score, lives, levelManager.current().getName());
+        String levelName = activeLevel == null ? "Loading..." : activeLevel.displayName();
+        hudRenderer.renderHud(graphics, score, lives, levelName, objectiveEngine.snapshot());
 
         bricks.forEach(brick -> brick.render(graphics));
         paddle.render(graphics);
@@ -411,10 +462,13 @@ public class GameplayScene extends Scene {
         if (paused) {
             graphics.setColor(new Color(0, 0, 0, 150));
             graphics.fillRect(0, 0, context.getConfig().width(), context.getConfig().height());
-            hudRenderer.renderCenterMessage(graphics, "Paused", context.getConfig().width(), context.getConfig().height());
+            hudRenderer.renderCenterMessage(graphics,
+                    localization.translate("gameplay.message.paused"),
+                    context.getConfig().width(),
+                    context.getConfig().height());
         } else if (awaitingLaunch || gameOver || !statusMessage.isEmpty()) {
             hudRenderer.renderCenterMessage(graphics,
-                    statusMessage.isEmpty() ? "Press SPACE to launch" : statusMessage,
+                    statusMessage.isEmpty() ? localization.translate("gameplay.prompt.launch") : statusMessage,
                     context.getConfig().width(),
                     context.getConfig().height());
         }
@@ -427,5 +481,22 @@ public class GameplayScene extends Scene {
         graphics.setColor(new Color(49, 49, 77));
         graphics.setStroke(new BasicStroke(2));
         graphics.drawRect(40, 50, context.getConfig().width() - 80, context.getConfig().height() - 110);
+    }
+
+    private static class SceneObjectiveListener implements ObjectiveEngine.Listener {
+        @Override
+        public void onObjectiveProgress(ObjectiveEngine.ObjectiveState state) {
+            // Intentionally left blank; HUD pulls latest snapshot each frame.
+        }
+
+        @Override
+        public void onObjectiveCompleted(ObjectiveEngine.ObjectiveState state) {
+            // Future: hook celebrations or particle effects.
+        }
+
+        @Override
+        public void onObjectiveFailed(ObjectiveEngine.ObjectiveState state) {
+            // Future: trigger failure messaging or penalties.
+        }
     }
 }

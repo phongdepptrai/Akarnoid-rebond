@@ -2,17 +2,42 @@ package com.arcade.arkanoid.gameplay.entities;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.util.List;
 
 public class Brick extends AbstractEntity {
     private int hitPoints;
     private Color color;
     private final int scoreValue;
+    private final int gridColumn;
+    private final int gridRow;
+    private final String blueprintType;
+    private final List<String> tags;
+    private final List<String> modifiers;
 
     public Brick(double x, double y, double width, double height, int hitPoints, int scoreValue) {
+        this(x, y, width, height, hitPoints, scoreValue, -1, -1, "basic", List.of(), List.of());
+    }
+
+    public Brick(double x,
+                 double y,
+                 double width,
+                 double height,
+                 int hitPoints,
+                 int scoreValue,
+                 int gridColumn,
+                 int gridRow,
+                 String blueprintType,
+                 List<String> tags,
+                 List<String> modifiers) {
         super(x, y, width, height);
         this.hitPoints = Math.max(0, hitPoints);
         this.scoreValue = scoreValue;
         this.color = colorForHitPoints(this.hitPoints);
+        this.gridColumn = gridColumn;
+        this.gridRow = gridRow;
+        this.blueprintType = blueprintType == null ? "basic" : blueprintType;
+        this.tags = tags == null ? List.of() : List.copyOf(tags);
+        this.modifiers = modifiers == null ? List.of() : List.copyOf(modifiers);
     }
 
     public void hit() {
@@ -31,6 +56,26 @@ public class Brick extends AbstractEntity {
 
     public int getScoreValue() {
         return scoreValue;
+    }
+
+    public int getGridColumn() {
+        return gridColumn;
+    }
+
+    public int getGridRow() {
+        return gridRow;
+    }
+
+    public String getBlueprintType() {
+        return blueprintType;
+    }
+
+    public List<String> getTags() {
+        return tags;
+    }
+
+    public List<String> getModifiers() {
+        return modifiers;
     }
 
     public static Color colorForHitPoints(int strength) {

@@ -4,6 +4,10 @@ import com.arcade.arkanoid.engine.audio.SoundManager;
 import com.arcade.arkanoid.engine.assets.AssetManager;
 import com.arcade.arkanoid.engine.input.InputManager;
 import com.arcade.arkanoid.engine.scene.SceneManager;
+import com.arcade.arkanoid.economy.EconomyService;
+import com.arcade.arkanoid.engine.settings.SettingsManager;
+import com.arcade.arkanoid.localization.LocalizationService;
+import com.arcade.arkanoid.profile.ProfileManager;
 
 public final class GameContext {
     private final Game game;
@@ -13,6 +17,10 @@ public final class GameContext {
     private final AssetManager assets;
     private final SceneManager scenes;
     private final GameConfig config;
+    private final ProfileManager profileManager;
+    private final EconomyService economyService;
+    private final SettingsManager settingsManager;
+    private final LocalizationService localizationService;
 
     public GameContext(
             Game game,
@@ -21,7 +29,11 @@ public final class GameContext {
             SoundManager sound,
             AssetManager assets,
             SceneManager scenes,
-            GameConfig config
+            GameConfig config,
+            ProfileManager profileManager,
+            EconomyService economyService,
+            SettingsManager settingsManager,
+            LocalizationService localizationService
     ) {
         this.game = game;
         this.window = window;
@@ -30,6 +42,10 @@ public final class GameContext {
         this.assets = assets;
         this.scenes = scenes;
         this.config = config;
+        this.profileManager = profileManager;
+        this.economyService = economyService;
+        this.settingsManager = settingsManager;
+        this.localizationService = localizationService;
     }
 
     public Game getGame() {
@@ -58,5 +74,21 @@ public final class GameContext {
 
     public GameConfig getConfig() {
         return config;
+    }
+
+    public ProfileManager getProfileManager() {
+        return profileManager;
+    }
+
+    public EconomyService getEconomyService() {
+        return economyService;
+    }
+
+    public SettingsManager getSettingsManager() {
+        return settingsManager;
+    }
+
+    public LocalizationService getLocalizationService() {
+        return localizationService;
     }
 }

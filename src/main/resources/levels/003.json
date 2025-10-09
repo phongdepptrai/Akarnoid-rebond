@@ -1,0 +1,505 @@
+{
+  "id": "003",
+  "displayName": "Prism Peaks",
+  "description": "Shatter the neon crystals while keeping the slime spouts contained.",
+  "difficulty": "CHALLENGE",
+  "board": {
+    "columns": 10,
+    "rows": 12
+  },
+  "constraints": {
+    "timeLimitSeconds": 180.0
+  },
+  "bricks": [
+    {
+      "column": 2,
+      "row": 1,
+      "brickType": "basic:lime",
+      "hitPoints": 1,
+      "tags": [
+        "color:green"
+      ]
+    },
+    {
+      "column": 3,
+      "row": 1,
+      "brickType": "basic:grape",
+      "hitPoints": 1,
+      "tags": [
+        "color:purple"
+      ]
+    },
+    {
+      "column": 4,
+      "row": 1,
+      "brickType": "basic:lime",
+      "hitPoints": 1,
+      "tags": [
+        "color:green"
+      ]
+    },
+    {
+      "column": 5,
+      "row": 1,
+      "brickType": "basic:grape",
+      "hitPoints": 1,
+      "tags": [
+        "color:purple"
+      ]
+    },
+    {
+      "column": 6,
+      "row": 1,
+      "brickType": "basic:lime",
+      "hitPoints": 1,
+      "tags": [
+        "color:green"
+      ]
+    },
+    {
+      "column": 7,
+      "row": 1,
+      "brickType": "basic:grape",
+      "hitPoints": 1,
+      "tags": [
+        "color:purple"
+      ]
+    },
+    {
+      "column": 2,
+      "row": 2,
+      "brickType": "basic:grape",
+      "hitPoints": 1,
+      "tags": [
+        "color:purple"
+      ]
+    },
+    {
+      "column": 3,
+      "row": 2,
+      "brickType": "basic:lime",
+      "hitPoints": 1,
+      "tags": [
+        "color:green"
+      ]
+    },
+    {
+      "column": 4,
+      "row": 2,
+      "brickType": "basic:grape",
+      "hitPoints": 1,
+      "tags": [
+        "color:purple"
+      ]
+    },
+    {
+      "column": 5,
+      "row": 2,
+      "brickType": "basic:lime",
+      "hitPoints": 1,
+      "tags": [
+        "color:green"
+      ]
+    },
+    {
+      "column": 6,
+      "row": 2,
+      "brickType": "basic:grape",
+      "hitPoints": 1,
+      "tags": [
+        "color:purple"
+      ]
+    },
+    {
+      "column": 7,
+      "row": 2,
+      "brickType": "basic:lime",
+      "hitPoints": 1,
+      "tags": [
+        "color:green"
+      ]
+    },
+    {
+      "column": 2,
+      "row": 3,
+      "brickType": "basic:lime",
+      "hitPoints": 1,
+      "tags": [
+        "color:green"
+      ]
+    },
+    {
+      "column": 3,
+      "row": 3,
+      "brickType": "basic:grape",
+      "hitPoints": 1,
+      "tags": [
+        "color:purple"
+      ]
+    },
+    {
+      "column": 4,
+      "row": 3,
+      "brickType": "basic:lime",
+      "hitPoints": 1,
+      "tags": [
+        "color:green"
+      ]
+    },
+    {
+      "column": 5,
+      "row": 3,
+      "brickType": "basic:grape",
+      "hitPoints": 1,
+      "tags": [
+        "color:purple"
+      ]
+    },
+    {
+      "column": 6,
+      "row": 3,
+      "brickType": "basic:lime",
+      "hitPoints": 1,
+      "tags": [
+        "color:green"
+      ]
+    },
+    {
+      "column": 7,
+      "row": 3,
+      "brickType": "basic:grape",
+      "hitPoints": 1,
+      "tags": [
+        "color:purple"
+      ]
+    },
+    {
+      "column": 2,
+      "row": 4,
+      "brickType": "basic:grape",
+      "hitPoints": 1,
+      "tags": [
+        "color:purple"
+      ]
+    },
+    {
+      "column": 3,
+      "row": 4,
+      "brickType": "basic:lime",
+      "hitPoints": 1,
+      "tags": [
+        "color:green"
+      ]
+    },
+    {
+      "column": 4,
+      "row": 4,
+      "brickType": "basic:grape",
+      "hitPoints": 1,
+      "tags": [
+        "color:purple"
+      ]
+    },
+    {
+      "column": 5,
+      "row": 4,
+      "brickType": "basic:lime",
+      "hitPoints": 1,
+      "tags": [
+        "color:green"
+      ]
+    },
+    {
+      "column": 6,
+      "row": 4,
+      "brickType": "basic:grape",
+      "hitPoints": 1,
+      "tags": [
+        "color:purple"
+      ]
+    },
+    {
+      "column": 7,
+      "row": 4,
+      "brickType": "basic:lime",
+      "hitPoints": 1,
+      "tags": [
+        "color:green"
+      ]
+    },
+    {
+      "column": 2,
+      "row": 5,
+      "brickType": "basic:lime",
+      "hitPoints": 1,
+      "tags": [
+        "color:green"
+      ]
+    },
+    {
+      "column": 3,
+      "row": 5,
+      "brickType": "basic:grape",
+      "hitPoints": 1,
+      "tags": [
+        "color:purple"
+      ]
+    },
+    {
+      "column": 4,
+      "row": 5,
+      "brickType": "basic:lime",
+      "hitPoints": 1,
+      "tags": [
+        "color:green"
+      ]
+    },
+    {
+      "column": 5,
+      "row": 5,
+      "brickType": "basic:grape",
+      "hitPoints": 1,
+      "tags": [
+        "color:purple"
+      ]
+    },
+    {
+      "column": 6,
+      "row": 5,
+      "brickType": "basic:lime",
+      "hitPoints": 1,
+      "tags": [
+        "color:green"
+      ]
+    },
+    {
+      "column": 7,
+      "row": 5,
+      "brickType": "basic:grape",
+      "hitPoints": 1,
+      "tags": [
+        "color:purple"
+      ]
+    },
+    {
+      "column": 2,
+      "row": 6,
+      "brickType": "basic:grape",
+      "hitPoints": 1,
+      "tags": [
+        "color:purple"
+      ]
+    },
+    {
+      "column": 3,
+      "row": 6,
+      "brickType": "basic:lime",
+      "hitPoints": 1,
+      "tags": [
+        "color:green"
+      ]
+    },
+    {
+      "column": 4,
+      "row": 6,
+      "brickType": "basic:grape",
+      "hitPoints": 1,
+      "tags": [
+        "color:purple"
+      ]
+    },
+    {
+      "column": 5,
+      "row": 6,
+      "brickType": "basic:lime",
+      "hitPoints": 1,
+      "tags": [
+        "color:green"
+      ]
+    },
+    {
+      "column": 6,
+      "row": 6,
+      "brickType": "basic:grape",
+      "hitPoints": 1,
+      "tags": [
+        "color:purple"
+      ]
+    },
+    {
+      "column": 7,
+      "row": 6,
+      "brickType": "basic:lime",
+      "hitPoints": 1,
+      "tags": [
+        "color:green"
+      ]
+    },
+    {
+      "column": 3,
+      "row": 2,
+      "brickType": "armored:rock",
+      "hitPoints": 3,
+      "tags": [
+        "blocker:armored"
+      ]
+    },
+    {
+      "column": 6,
+      "row": 2,
+      "brickType": "armored:rock",
+      "hitPoints": 3,
+      "tags": [
+        "blocker:armored"
+      ]
+    },
+    {
+      "column": 4,
+      "row": 0,
+      "brickType": "spawner:slime",
+      "hitPoints": 3,
+      "tags": [
+        "blocker:spawner"
+      ]
+    },
+    {
+      "column": 5,
+      "row": 0,
+      "brickType": "spawner:slime",
+      "hitPoints": 3,
+      "tags": [
+        "blocker:spawner"
+      ]
+    },
+    {
+      "column": 4,
+      "row": 3,
+      "brickType": "basic:rainbow",
+      "hitPoints": 1,
+      "tags": [
+        "color:any"
+      ]
+    },
+    {
+      "column": 5,
+      "row": 3,
+      "brickType": "basic:rainbow",
+      "hitPoints": 1,
+      "tags": [
+        "color:any"
+      ]
+    },
+    {
+      "column": 4,
+      "row": 5,
+      "brickType": "basic:rainbow",
+      "hitPoints": 1,
+      "tags": [
+        "color:any"
+      ]
+    },
+    {
+      "column": 5,
+      "row": 5,
+      "brickType": "basic:rainbow",
+      "hitPoints": 1,
+      "tags": [
+        "color:any"
+      ]
+    }
+  ],
+  "objectives": [
+    {
+      "id": "pulse-harvest",
+      "type": "clear-tagged-bricks",
+      "target": {
+        "amount": 18,
+        "trackedTags": [
+          "color:purple"
+        ]
+      },
+      "optional": false,
+      "tags": [
+        "primary",
+        "color-clear"
+      ]
+    },
+    {
+      "id": "rupture-armor",
+      "type": "clear-tagged-bricks",
+      "target": {
+        "amount": 2,
+        "trackedTags": [
+          "blocker:armored"
+        ]
+      },
+      "optional": false,
+      "tags": [
+        "primary",
+        "blocker-clear"
+      ]
+    },
+    {
+      "id": "stop-slime",
+      "type": "clear-tagged-bricks",
+      "target": {
+        "amount": 2,
+        "trackedTags": [
+          "blocker:spawner"
+        ]
+      },
+      "optional": true,
+      "tags": [
+        "bonus",
+        "blocker-clear"
+      ]
+    }
+  ],
+  "boosters": [
+    {
+      "boosterId": "booster:shield",
+      "quantity": 1
+    },
+    {
+      "boosterId": "booster:wide-paddle",
+      "quantity": 1
+    }
+  ],
+  "rewardTiers": [
+    {
+      "stars": 1,
+      "rewards": [
+        {
+          "type": "currency:coins",
+          "quantity": 80
+        }
+      ]
+    },
+    {
+      "stars": 2,
+      "rewards": [
+        {
+          "type": "currency:coins",
+          "quantity": 140
+        },
+        {
+          "type": "booster:shield",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "stars": 3,
+      "rewards": [
+        {
+          "type": "currency:coins",
+          "quantity": 220
+        },
+        {
+          "type": "booster:rainbow-ball",
+          "quantity": 1
+        }
+      ]
+    }
+  ]
+}

@@ -158,6 +158,14 @@ saves/
 replays/
 user-config.properties
 
+# Local game data (keep structure, ignore user data)
+/data/profiles/*.json
+/data/saves/*
+/data/screenshots/*
+!/data/profiles/.keep
+!/data/saves/.keep
+!/data/screenshots/.keep
+
 # Documentation build outputs
 /docs/build/
 /docs/_build/

@@ -6,6 +6,10 @@ import com.arcade.arkanoid.engine.input.InputManager;
 import com.arcade.arkanoid.engine.scene.Scene;
 import com.arcade.arkanoid.engine.util.FontLoader;
 import com.arcade.arkanoid.gameplay.GameplayScene;
+import com.arcade.arkanoid.economy.DailyBonusResult;
+import com.arcade.arkanoid.economy.EconomyService;
+import com.arcade.arkanoid.localization.LocalizationService;
+import com.arcade.arkanoid.profile.PlayerProfile;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -19,19 +23,37 @@ import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.InputStream;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
 import javax.imageio.ImageIO;
 
 public class MainMenuScene extends Scene {
+    private enum MenuAction {
+        START_NEW,
+        START,
+        RESUME,
+        WORLD_MAP,
+        EXIT
+    }
+
     private final Font titleFont = new Font("iomanoid", Font.PLAIN, 150);
     private final Font subtitleFont = new Font("iomanoid", Font.PLAIN, 80);
     private final Font optionFont = new Font("emulogic", Font.PLAIN, 26);
     private final Font hintFont = new Font("Orbitron", Font.PLAIN, 16);
-    private String[] options = new String[0];
+    private final LocalizationService localization;
+    private final EconomyService economy;
+    private MenuAction[] options = new MenuAction[0];
     private int selectedIndex = 0;
     private BufferedImage backgroundImage;
+    private DailyBonusResult dailyBonusResult;
+    private String dailyBonusMessage = "";
 
     public MainMenuScene(GameContext context) {
         super(context);
+        this.localization = context.getLocalizationService();
+        this.economy = context.getEconomyService();
     }
 
     @Override
@@ -52,11 +74,14 @@ public class MainMenuScene extends Scene {
         } catch (Exception e) {
             System.err.println("Failed to load background image: " + e.getMessage());
         }
+        dailyBonusResult = economy.claimDailyBonus();
+        dailyBonusMessage = formatDailyBonusMessage(dailyBonusResult);
+
         GameplayScene gameplay = (GameplayScene) context.getScenes().getPersistentScene(ArkanoidGame.SCENE_GAMEPLAY);
         boolean resumeAvailable = gameplay != null && gameplay.isSessionActive();
         options = resumeAvailable
-                ? new String[]{"Start New Game", "Resume Game", "Exit"}
-                : new String[]{"Start Game", "Exit"};
+                ? new MenuAction[]{MenuAction.START_NEW, MenuAction.RESUME, MenuAction.WORLD_MAP, MenuAction.EXIT}
+                : new MenuAction[]{MenuAction.START, MenuAction.WORLD_MAP, MenuAction.EXIT};
         selectedIndex = 0;
     }
 
@@ -64,33 +89,129 @@ public class MainMenuScene extends Scene {
     public void update(double deltaTime) {
         InputManager input = context.getInput();
 
-        if (input.isKeyJustPressed(KeyEvent.VK_UP) || input.isKeyJustPressed(KeyEvent.VK_W)) {
-            selectedIndex = (selectedIndex - 1 + options.length) % options.length;
-        }
-        if (input.isKeyJustPressed(KeyEvent.VK_DOWN) || input.isKeyJustPressed(KeyEvent.VK_S)) {
-            selectedIndex = (selectedIndex + 1) % options.length;
-        }
-        if (input.isKeyJustPressed(KeyEvent.VK_ENTER) || input.isKeyJustPressed(KeyEvent.VK_SPACE)) {
-            handleSelection();
+        if (options.length > 0) {
+            int move = 0;
+            if (input.isKeyJustPressed(KeyEvent.VK_UP) || input.isKeyJustPressed(KeyEvent.VK_W)) {
+                move = -1;
+            }
+            if (input.isKeyJustPressed(KeyEvent.VK_DOWN) || input.isKeyJustPressed(KeyEvent.VK_S)) {
+                if (move == 0) {
+                    move = 1;
+                }
+            }
+            if (move != 0) {
+                selectedIndex = Math.max(0, Math.min(selectedIndex + move, options.length - 1));
+            }
+            if (move == 0 && (input.isKeyJustPressed(KeyEvent.VK_ENTER) || input.isKeyJustPressed(KeyEvent.VK_SPACE))) {
+                handleSelection();
+            }
         }
     }
 
     private void handleSelection() {
-        String choice = options[selectedIndex];
-        GameplayScene gameplay = (GameplayScene) context.getScenes().getPersistentScene(ArkanoidGame.SCENE_GAMEPLAY);
-        if ("Start New Game".equals(choice) || "Start Game".equals(choice)) {
-            if (gameplay != null) {
-                gameplay.beginNewSession();
-            }
-            context.getScenes().switchTo(ArkanoidGame.SCENE_GAMEPLAY);
-        } else if ("Resume Game".equals(choice)) {
-            if (gameplay != null && gameplay.isSessionActive()) {
-                context.getScenes().switchTo(ArkanoidGame.SCENE_GAMEPLAY);
-            }
-        } else if ("Exit".equals(choice)) {
-            context.getGame().stop();
-            System.exit(0);
+        if (options.length == 0) {
+            return;
         }
+        MenuAction action = options[selectedIndex];
+        GameplayScene gameplay = (GameplayScene) context.getScenes().getPersistentScene(ArkanoidGame.SCENE_GAMEPLAY);
+        switch (action) {
+            case START_NEW:
+            case START:
+                context.getProfileManager().getActiveProfile().setCurrentLevelId("001");
+                context.getProfileManager().saveProfile();
+                if (gameplay != null) {
+                    gameplay.beginNewSession();
+                }
+                context.getScenes().switchTo(ArkanoidGame.SCENE_GAMEPLAY);
+                break;
+            case RESUME:
+                if (gameplay != null && gameplay.isSessionActive()) {
+                    context.getScenes().switchTo(ArkanoidGame.SCENE_GAMEPLAY);
+                }
+                break;
+            case WORLD_MAP:
+                context.getScenes().switchTo(ArkanoidGame.SCENE_MAP);
+                break;
+            case EXIT:
+                context.getGame().stop();
+                System.exit(0);
+                break;
+            default:
+                break;
+        }
+    }
+
+    private String labelFor(MenuAction action) {
+        switch (action) {
+            case START_NEW:
+                return localization.translate("menu.startNew");
+            case START:
+                return localization.translate("menu.start");
+            case RESUME:
+                return localization.translate("menu.resume");
+            case WORLD_MAP:
+                return localization.translate("menu.worldMap");
+            case EXIT:
+                return localization.translate("menu.exit");
+            default:
+                return action.name();
+        }
+    }
+
+    private void drawPlayerStats(Graphics2D graphics) {
+        PlayerProfile profile = context.getProfileManager().getActiveProfile();
+        graphics.setFont(hintFont);
+        graphics.setColor(new Color(210, 210, 210));
+        int y = 40;
+        graphics.drawString(localization.translate("menu.status.lives", profile.getLives(), profile.getMaxLives()), 40, y);
+        y += 24;
+        graphics.drawString(localization.translate("menu.status.coins", profile.getCoins()), 40, y);
+        y += 24;
+        graphics.drawString(localization.translate("menu.status.energy", profile.getEnergy(), profile.getMaxEnergy()), 40, y);
+        y += 24;
+        graphics.drawString(localization.translate("menu.status.streak", profile.getDailyStreak()), 40, y);
+        y += 30;
+        if (dailyBonusMessage != null && !dailyBonusMessage.isBlank()) {
+            graphics.drawString(dailyBonusMessage, 40, y);
+            y += 22;
+        }
+        String nextBonus = formatNextBonusCountdown(profile);
+        if (!nextBonus.isBlank()) {
+            graphics.drawString(nextBonus, 40, y);
+        }
+    }
+
+    private String formatDailyBonusMessage(DailyBonusResult result) {
+        if (result == null) {
+            return "";
+        }
+        if (result.isGranted()) {
+            return localization.translate("menu.dailyBonus.claimed",
+                    result.getCoinsAwarded(),
+                    result.getLivesAwarded(),
+                    result.getStreak());
+        }
+        return localization.translate("menu.dailyBonus.already", result.getStreak());
+    }
+
+    private String formatNextBonusCountdown(PlayerProfile profile) {
+        long lastClaim = profile.getLastDailyBonusEpochSeconds();
+        if (lastClaim <= 0) {
+            return "";
+        }
+        Instant now = Instant.now();
+        LocalDate lastClaimDate = Instant.ofEpochSecond(lastClaim).atZone(ZoneOffset.UTC).toLocalDate();
+        LocalDate nextClaimDate = lastClaimDate.plusDays(1);
+        Instant nextClaimInstant = nextClaimDate.atStartOfDay().toInstant(ZoneOffset.UTC);
+        if (!now.isBefore(nextClaimInstant)) {
+            return localization.translate("menu.dailyBonus.ready");
+        }
+        long seconds = Math.max(0, Duration.between(now, nextClaimInstant).getSeconds());
+        long hours = seconds / 3600;
+        long minutes = (seconds % 3600) / 60;
+        long secs = seconds % 60;
+        String formatted = String.format("%02d:%02d:%02d", hours, minutes, secs);
+        return localization.translate("menu.dailyBonus.next", formatted);
     }
 
     private void draw3DSpaceText(Graphics2D g, String text, Font font, int x, int y) {
@@ -142,6 +263,7 @@ public class MainMenuScene extends Scene {
     public void render(Graphics2D graphics) {
         drawBackground(graphics);
         int width = context.getConfig().width();
+        drawPlayerStats(graphics);
         
         String title = "ARKANOID";
         int titleWidth = graphics.getFontMetrics(titleFont).stringWidth(title);
@@ -157,13 +279,13 @@ public class MainMenuScene extends Scene {
         draw3DSpaceText(graphics, subtitle, subtitleFont, subtitleX, subtitleY);
         graphics.setFont(optionFont);
         for (int i = 0; i < options.length; i++) {
-            String option = options[i];
+            String option = labelFor(options[i]);
             int optionWidth = graphics.getFontMetrics().stringWidth(option);
             int x = (width - optionWidth) / 2;
             int y = 400 + i * 70;  
             if (i == selectedIndex) {
                 graphics.setColor(new Color(0xFFEB3B));
-                graphics.drawString("?", x - 40, y);
+                graphics.drawString(">", x - 40, y);
             }
             graphics.setColor(i == selectedIndex ? Color.WHITE : new Color(220, 220, 220));
             graphics.drawString(option, x, y);
@@ -171,8 +293,8 @@ public class MainMenuScene extends Scene {
 
         graphics.setFont(hintFont);
         graphics.setColor(new Color(190, 190, 190));
-        graphics.drawString("Use arrow keys or WASD to navigate. Enter to select.", 40, context.getConfig().height() - 60);
-        graphics.drawString("Press ESC anytime during the game to pause.", 40, context.getConfig().height() - 30);
+        graphics.drawString(localization.translate("menu.hint.navigate"), 40, context.getConfig().height() - 60);
+        graphics.drawString(localization.translate("menu.hint.pause"), 40, context.getConfig().height() - 30);
     }
 
     private void drawBackground(Graphics2D graphics) {
