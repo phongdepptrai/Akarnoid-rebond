@@ -47,8 +47,10 @@ public class MainMenuScene extends Scene {
     private MenuAction[] options = new MenuAction[0];
     private int selectedIndex = 0;
     private BufferedImage backgroundImage;
+    private BufferedImage backgroundNoPlanets;
     private DailyBonusResult dailyBonusResult;
     private String dailyBonusMessage = "";
+    private double animationTime = 0;
 
     public MainMenuScene(GameContext context) {
         super(context);
@@ -59,7 +61,7 @@ public class MainMenuScene extends Scene {
     @Override
     public void onEnter() {
         FontLoader.loadAll();
-        // Load background image from resources (try both JPG and JPEG case variants)
+        // Load background image with planets
         backgroundImage = null;
         try {
             InputStream is = getClass().getResourceAsStream("/graphics/background.JPG");
@@ -74,6 +76,23 @@ public class MainMenuScene extends Scene {
         } catch (Exception e) {
             System.err.println("Failed to load background image: " + e.getMessage());
         }
+        
+        // Load background image without planets
+        backgroundNoPlanets = null;
+        try {
+            InputStream is = getClass().getResourceAsStream("/graphics/background1.JPG");
+            if (is == null) {
+                is = getClass().getResourceAsStream("/graphics/background1.jpg");
+            }
+            if (is != null) {
+                try (InputStream toRead = is) {
+                    backgroundNoPlanets = ImageIO.read(toRead);
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Failed to load background1 image: " + e.getMessage());
+        }
+        
         dailyBonusResult = economy.claimDailyBonus();
         dailyBonusMessage = formatDailyBonusMessage(dailyBonusResult);
 
@@ -87,6 +106,7 @@ public class MainMenuScene extends Scene {
 
     @Override
     public void update(double deltaTime) {
+        animationTime += deltaTime;
         InputManager input = context.getInput();
 
         if (options.length > 0) {
@@ -301,7 +321,38 @@ public class MainMenuScene extends Scene {
         int width = context.getConfig().width();
         int height = context.getConfig().height();
 
-        if (backgroundImage != null) {
+        if (backgroundNoPlanets != null) {
+            // Always draw base background without planets
+            int imgW = backgroundNoPlanets.getWidth();
+            int imgH = backgroundNoPlanets.getHeight();
+            if (imgW > 0 && imgH > 0) {
+                double scale = Math.max(width / (double) imgW, height / (double) imgH);
+                int drawW = (int) Math.ceil(imgW * scale);
+                int drawH = (int) Math.ceil(imgH * scale);
+                int drawX = (width - drawW) / 2;
+                int drawY = (height - drawH) / 2;
+                graphics.drawImage(backgroundNoPlanets, drawX, drawY, drawW, drawH, null);
+                
+                // Draw planets with pulsing opacity
+                if (backgroundImage != null) {
+                    // Create pulsing effect (slow fade in/out cycle)
+                    float planetOpacity = (float)(0.3 + 0.7 * Math.abs(Math.sin(animationTime * 0.4)));
+                    
+                    java.awt.AlphaComposite alphaComposite = java.awt.AlphaComposite.getInstance(
+                        java.awt.AlphaComposite.SRC_OVER, planetOpacity
+                    );
+                    graphics.setComposite(alphaComposite);
+                    graphics.drawImage(backgroundImage, drawX, drawY, drawW, drawH, null);
+                    
+                    // Reset composite
+                    graphics.setComposite(java.awt.AlphaComposite.getInstance(
+                        java.awt.AlphaComposite.SRC_OVER, 1.0f
+                    ));
+                }
+                return;
+            }
+        } else if (backgroundImage != null) {
+            // Fallback to single background if background1 not available
             int imgW = backgroundImage.getWidth();
             int imgH = backgroundImage.getHeight();
             if (imgW > 0 && imgH > 0) {
@@ -315,6 +366,7 @@ public class MainMenuScene extends Scene {
             }
         }
 
+        // Fallback gradient if no images available
         GradientPaint spaceGradient = new GradientPaint(
             0, 0, new Color(20, 0, 40), 
             0, height, new Color(0, 0, 10)
