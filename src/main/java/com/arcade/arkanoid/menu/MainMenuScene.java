@@ -5,6 +5,7 @@ import com.arcade.arkanoid.engine.core.GameContext;
 import com.arcade.arkanoid.engine.input.InputManager;
 import com.arcade.arkanoid.engine.scene.Scene;
 import com.arcade.arkanoid.engine.util.FontLoader;
+import com.arcade.arkanoid.engine.assets.AssetManager;
 import com.arcade.arkanoid.gameplay.GameplayScene;
 import com.arcade.arkanoid.economy.DailyBonusResult;
 import com.arcade.arkanoid.economy.EconomyService;
@@ -61,38 +62,13 @@ public class MainMenuScene extends Scene {
     @Override
     public void onEnter() {
         FontLoader.loadAll();
-        // Load background image with planets
-        backgroundImage = null;
-        try {
-            InputStream is = getClass().getResourceAsStream("/graphics/background.JPG");
-            if (is == null) {
-                is = getClass().getResourceAsStream("/graphics/background.jpg");
-            }
-            if (is != null) {
-                try (InputStream toRead = is) {
-                    backgroundImage = ImageIO.read(toRead);
-                }
-            }
-        } catch (Exception e) {
-            System.err.println("Failed to load background image: " + e.getMessage());
-        }
-        
-        // Load background image without planets
-        backgroundNoPlanets = null;
-        try {
-            InputStream is = getClass().getResourceAsStream("/graphics/background1.JPG");
-            if (is == null) {
-                is = getClass().getResourceAsStream("/graphics/background1.jpg");
-            }
-            if (is != null) {
-                try (InputStream toRead = is) {
-                    backgroundNoPlanets = ImageIO.read(toRead);
-                }
-            }
-        } catch (Exception e) {
-            System.err.println("Failed to load background1 image: " + e.getMessage());
-        }
-        
+        AssetManager assets = context.getAssets();
+
+        assets.loadImage("background", "/graphics/background.jpg");
+        assets.loadImage("background1", "/graphics/background1.jpg");
+        backgroundImage = assets.getImage("background");
+        backgroundNoPlanets = assets.getImage("background1");
+
         dailyBonusResult = economy.claimDailyBonus();
         dailyBonusMessage = formatDailyBonusMessage(dailyBonusResult);
 
