@@ -1,0 +1,81 @@
+{
+  "id": "010",
+  "displayName": "Marshmallow Marsh",
+  "description": "Dry out the marshmallows and burst the bubble clouds before they respawn.",
+  "difficulty": "STORY",
+  "board": {
+    "columns": 10,
+    "rows": 12
+  },
+  "constraints": {
+    "timeLimitSeconds": 210.0
+  },
+  "bricks": [
+    { "column": 1, "row": 1, "brickType": "basic:strawberry", "hitPoints": 1, "tags": ["color:red"] },
+    { "column": 2, "row": 1, "brickType": "basic:lemon", "hitPoints": 1, "tags": ["color:yellow"] },
+    { "column": 3, "row": 1, "brickType": "basic:strawberry", "hitPoints": 1, "tags": ["color:red"] },
+    { "column": 6, "row": 1, "brickType": "basic:strawberry", "hitPoints": 1, "tags": ["color:red"] },
+    { "column": 7, "row": 1, "brickType": "basic:lemon", "hitPoints": 1, "tags": ["color:yellow"] },
+    { "column": 8, "row": 1, "brickType": "basic:strawberry", "hitPoints": 1, "tags": ["color:red"] },
+    { "column": 2, "row": 2, "brickType": "spawner:slime", "hitPoints": 3, "tags": ["blocker:spawner"] },
+    { "column": 7, "row": 2, "brickType": "spawner:slime", "hitPoints": 3, "tags": ["blocker:spawner"] },
+    { "column": 3, "row": 2, "brickType": "basic:rainbow", "hitPoints": 1, "tags": ["color:any"] },
+    { "column": 6, "row": 2, "brickType": "basic:rainbow", "hitPoints": 1, "tags": ["color:any"] },
+    { "column": 4, "row": 3, "brickType": "basic:blueberry", "hitPoints": 1, "tags": ["color:blue"] },
+    { "column": 5, "row": 3, "brickType": "basic:blueberry", "hitPoints": 1, "tags": ["color:blue"] },
+    { "column": 2, "row": 4, "brickType": "jelly:orange", "hitPoints": 2, "tags": ["color:orange", "blocker:jelly"] },
+    { "column": 7, "row": 4, "brickType": "jelly:orange", "hitPoints": 2, "tags": ["color:orange", "blocker:jelly"] },
+    { "column": 3, "row": 5, "brickType": "basic:lemon", "hitPoints": 1, "tags": ["color:yellow"] },
+    { "column": 6, "row": 5, "brickType": "basic:lemon", "hitPoints": 1, "tags": ["color:yellow"] },
+    { "column": 4, "row": 6, "brickType": "basic:rainbow", "hitPoints": 1, "tags": ["color:any"] },
+    { "column": 5, "row": 6, "brickType": "basic:rainbow", "hitPoints": 1, "tags": ["color:any"] },
+    { "column": 3, "row": 7, "brickType": "spawner:gum", "hitPoints": 3, "tags": ["blocker:spawner"] },
+    { "column": 6, "row": 7, "brickType": "spawner:gum", "hitPoints": 3, "tags": ["blocker:spawner"] },
+    { "column": 4, "row": 8, "brickType": "basic:blueberry", "hitPoints": 1, "tags": ["color:blue"] },
+    { "column": 5, "row": 8, "brickType": "basic:blueberry", "hitPoints": 1, "tags": ["color:blue"] }
+  ],
+  "objectives": [
+    {
+      "id": "dry-marsh",
+      "type": "clear-tagged-bricks",
+      "target": { "amount": 12, "trackedTags": ["color:yellow"] },
+      "optional": false,
+      "tags": ["primary", "color-clear"]
+    },
+    {
+      "id": "burst-clouds",
+      "type": "clear-tagged-bricks",
+      "target": { "amount": 4, "trackedTags": ["blocker:jelly"] },
+      "optional": false,
+      "tags": ["primary", "blocker-clear"]
+    },
+    {
+      "id": "halt-spawners",
+      "type": "clear-tagged-bricks",
+      "target": { "amount": 4, "trackedTags": ["blocker:spawner"] },
+      "optional": true,
+      "tags": ["bonus", "blocker-clear"]
+    }
+  ],
+  "boosters": [
+    { "boosterId": "booster:multi-ball", "quantity": 1 },
+    { "boosterId": "booster:shield", "quantity": 1 }
+  ],
+  "rewardTiers": [
+    { "stars": 1, "rewards": [{ "type": "currency:coins", "quantity": 110 }] },
+    {
+      "stars": 2,
+      "rewards": [
+        { "type": "currency:coins", "quantity": 170 },
+        { "type": "booster:multi-ball", "quantity": 1 }
+      ]
+    },
+    {
+      "stars": 3,
+      "rewards": [
+        { "type": "currency:coins", "quantity": 260 },
+        { "type": "booster:rainbow-ball", "quantity": 1 }
+      ]
+    }
+  ]
+}

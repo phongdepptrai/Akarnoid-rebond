@@ -1,0 +1,83 @@
+{
+  "id": "008",
+  "displayName": "Frosted Summit",
+  "description": "Crack the frosted surface and free the snowflakes caught in the drift.",
+  "difficulty": "STORY",
+  "board": {
+    "columns": 10,
+    "rows": 12
+  },
+  "constraints": {
+    "timeLimitSeconds": 170.0
+  },
+  "bricks": [
+    { "column": 2, "row": 1, "brickType": "basic:blueberry", "hitPoints": 1, "tags": ["color:blue"] },
+    { "column": 3, "row": 1, "brickType": "basic:blueberry", "hitPoints": 1, "tags": ["color:blue"] },
+    { "column": 6, "row": 1, "brickType": "basic:blueberry", "hitPoints": 1, "tags": ["color:blue"] },
+    { "column": 7, "row": 1, "brickType": "basic:blueberry", "hitPoints": 1, "tags": ["color:blue"] },
+    { "column": 4, "row": 1, "brickType": "basic:lemon", "hitPoints": 1, "tags": ["color:yellow"] },
+    { "column": 5, "row": 1, "brickType": "basic:lemon", "hitPoints": 1, "tags": ["color:yellow"] },
+    { "column": 3, "row": 2, "brickType": "jelly:orange", "hitPoints": 2, "tags": ["color:orange", "blocker:jelly"] },
+    { "column": 6, "row": 2, "brickType": "jelly:orange", "hitPoints": 2, "tags": ["color:orange", "blocker:jelly"] },
+    { "column": 4, "row": 3, "brickType": "basic:rainbow", "hitPoints": 1, "tags": ["color:any"] },
+    { "column": 5, "row": 3, "brickType": "basic:rainbow", "hitPoints": 1, "tags": ["color:any"] },
+    { "column": 2, "row": 3, "brickType": "basic:lime", "hitPoints": 1, "tags": ["color:green"] },
+    { "column": 7, "row": 3, "brickType": "basic:lime", "hitPoints": 1, "tags": ["color:green"] },
+    { "column": 2, "row": 4, "brickType": "basic:blueberry", "hitPoints": 1, "tags": ["color:blue"] },
+    { "column": 3, "row": 4, "brickType": "basic:blueberry", "hitPoints": 1, "tags": ["color:blue"] },
+    { "column": 6, "row": 4, "brickType": "basic:blueberry", "hitPoints": 1, "tags": ["color:blue"] },
+    { "column": 7, "row": 4, "brickType": "basic:blueberry", "hitPoints": 1, "tags": ["color:blue"] },
+    { "column": 4, "row": 4, "brickType": "spawner:gum", "hitPoints": 3, "tags": ["blocker:spawner"] },
+    { "column": 5, "row": 4, "brickType": "spawner:gum", "hitPoints": 3, "tags": ["blocker:spawner"] },
+    { "column": 3, "row": 5, "brickType": "basic:lemon", "hitPoints": 1, "tags": ["color:yellow"] },
+    { "column": 6, "row": 5, "brickType": "basic:lemon", "hitPoints": 1, "tags": ["color:yellow"] },
+    { "column": 4, "row": 6, "brickType": "jelly:orange", "hitPoints": 2, "tags": ["color:orange", "blocker:jelly"] },
+    { "column": 5, "row": 6, "brickType": "jelly:orange", "hitPoints": 2, "tags": ["color:orange", "blocker:jelly"] },
+    { "column": 4, "row": 7, "brickType": "basic:rainbow", "hitPoints": 1, "tags": ["color:any"] },
+    { "column": 5, "row": 7, "brickType": "basic:rainbow", "hitPoints": 1, "tags": ["color:any"] }
+  ],
+  "objectives": [
+    {
+      "id": "crack-ice",
+      "type": "clear-tagged-bricks",
+      "target": { "amount": 8, "trackedTags": ["blocker:jelly"] },
+      "optional": false,
+      "tags": ["primary", "blocker-clear"]
+    },
+    {
+      "id": "save-snowflakes",
+      "type": "clear-tagged-bricks",
+      "target": { "amount": 12, "trackedTags": ["color:blue"] },
+      "optional": false,
+      "tags": ["primary", "color-clear"]
+    },
+    {
+      "id": "beat-timer",
+      "type": "score",
+      "target": { "amount": 700 },
+      "optional": true,
+      "tags": ["bonus", "score"]
+    }
+  ],
+  "boosters": [
+    { "boosterId": "booster:shield", "quantity": 1 },
+    { "boosterId": "booster:aim-line", "quantity": 1 }
+  ],
+  "rewardTiers": [
+    { "stars": 1, "rewards": [{ "type": "currency:coins", "quantity": 95 }] },
+    {
+      "stars": 2,
+      "rewards": [
+        { "type": "currency:coins", "quantity": 155 },
+        { "type": "booster:shield", "quantity": 1 }
+      ]
+    },
+    {
+      "stars": 3,
+      "rewards": [
+        { "type": "currency:coins", "quantity": 240 },
+        { "type": "booster:wide-paddle", "quantity": 1 }
+      ]
+    }
+  ]
+}

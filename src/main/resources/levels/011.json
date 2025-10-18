@@ -1,0 +1,81 @@
+{
+  "id": "011",
+  "displayName": "Peppermint Peak",
+  "description": "Unlock the peppermint canes and clear the striped layers for a fresh ascent.",
+  "difficulty": "STORY",
+  "board": {
+    "columns": 10,
+    "rows": 12
+  },
+  "constraints": {
+    "timeLimitSeconds": 220.0
+  },
+  "bricks": [
+    { "column": 1, "row": 1, "brickType": "locked:mint", "hitPoints": 2, "tags": ["color:green", "blocker:lock"] },
+    { "column": 2, "row": 1, "brickType": "locked:mint", "hitPoints": 2, "tags": ["color:green", "blocker:lock"] },
+    { "column": 7, "row": 1, "brickType": "locked:mint", "hitPoints": 2, "tags": ["color:green", "blocker:lock"] },
+    { "column": 8, "row": 1, "brickType": "locked:mint", "hitPoints": 2, "tags": ["color:green", "blocker:lock"] },
+    { "column": 3, "row": 1, "brickType": "basic:strawberry", "hitPoints": 1, "tags": ["color:red"] },
+    { "column": 6, "row": 1, "brickType": "basic:strawberry", "hitPoints": 1, "tags": ["color:red"] },
+    { "column": 4, "row": 1, "brickType": "basic:lemon", "hitPoints": 1, "tags": ["color:yellow"] },
+    { "column": 5, "row": 1, "brickType": "basic:lemon", "hitPoints": 1, "tags": ["color:yellow"] },
+    { "column": 2, "row": 2, "brickType": "basic:rainbow", "hitPoints": 1, "tags": ["color:any"] },
+    { "column": 7, "row": 2, "brickType": "basic:rainbow", "hitPoints": 1, "tags": ["color:any"] },
+    { "column": 3, "row": 3, "brickType": "basic:strawberry", "hitPoints": 2, "tags": ["color:red"] },
+    { "column": 6, "row": 3, "brickType": "basic:strawberry", "hitPoints": 2, "tags": ["color:red"] },
+    { "column": 4, "row": 4, "brickType": "basic:lemon", "hitPoints": 1, "tags": ["color:yellow"] },
+    { "column": 5, "row": 4, "brickType": "basic:lemon", "hitPoints": 1, "tags": ["color:yellow"] },
+    { "column": 2, "row": 5, "brickType": "jelly:orange", "hitPoints": 2, "tags": ["color:orange", "blocker:jelly"] },
+    { "column": 7, "row": 5, "brickType": "jelly:orange", "hitPoints": 2, "tags": ["color:orange", "blocker:jelly"] },
+    { "column": 3, "row": 6, "brickType": "basic:rainbow", "hitPoints": 1, "tags": ["color:any"] },
+    { "column": 6, "row": 6, "brickType": "basic:rainbow", "hitPoints": 1, "tags": ["color:any"] },
+    { "column": 4, "row": 6, "brickType": "basic:strawberry", "hitPoints": 1, "tags": ["color:red"] },
+    { "column": 5, "row": 6, "brickType": "basic:strawberry", "hitPoints": 1, "tags": ["color:red"] },
+    { "column": 3, "row": 7, "brickType": "basic:lemon", "hitPoints": 1, "tags": ["color:yellow"] },
+    { "column": 6, "row": 7, "brickType": "basic:lemon", "hitPoints": 1, "tags": ["color:yellow"] }
+  ],
+  "objectives": [
+    {
+      "id": "unlock-canes",
+      "type": "clear-tagged-bricks",
+      "target": { "amount": 4, "trackedTags": ["blocker:lock"] },
+      "optional": false,
+      "tags": ["primary", "blocker-clear"]
+    },
+    {
+      "id": "clear-stripes",
+      "type": "clear-tagged-bricks",
+      "target": { "amount": 12, "trackedTags": ["color:red"] },
+      "optional": false,
+      "tags": ["primary", "color-clear"]
+    },
+    {
+      "id": "score-1000",
+      "type": "score",
+      "target": { "amount": 1000 },
+      "optional": true,
+      "tags": ["bonus", "score"]
+    }
+  ],
+  "boosters": [
+    { "boosterId": "booster:multi-ball", "quantity": 1 },
+    { "boosterId": "booster:wide-paddle", "quantity": 1 }
+  ],
+  "rewardTiers": [
+    { "stars": 1, "rewards": [{ "type": "currency:coins", "quantity": 120 }] },
+    {
+      "stars": 2,
+      "rewards": [
+        { "type": "currency:coins", "quantity": 180 },
+        { "type": "booster:multi-ball", "quantity": 1 }
+      ]
+    },
+    {
+      "stars": 3,
+      "rewards": [
+        { "type": "currency:coins", "quantity": 270 },
+        { "type": "booster:shield", "quantity": 1 }
+      ]
+    }
+  ]
+}

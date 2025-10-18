@@ -1,0 +1,86 @@
+{
+  "id": "013",
+  "displayName": "Rainbow Reef",
+  "description": "Dive through the rainbow reef and silence the siren spawners for the finale.",
+  "difficulty": "CHALLENGE",
+  "board": {
+    "columns": 10,
+    "rows": 12
+  },
+  "constraints": {
+    "timeLimitSeconds": 240.0
+  },
+  "bricks": [
+    { "column": 2, "row": 0, "brickType": "spawner:slime", "hitPoints": 3, "tags": ["blocker:spawner"] },
+    { "column": 7, "row": 0, "brickType": "spawner:slime", "hitPoints": 3, "tags": ["blocker:spawner"] },
+    { "column": 3, "row": 1, "brickType": "basic:rainbow", "hitPoints": 1, "tags": ["color:any"] },
+    { "column": 4, "row": 1, "brickType": "basic:rainbow", "hitPoints": 1, "tags": ["color:any"] },
+    { "column": 5, "row": 1, "brickType": "basic:rainbow", "hitPoints": 1, "tags": ["color:any"] },
+    { "column": 6, "row": 1, "brickType": "basic:rainbow", "hitPoints": 1, "tags": ["color:any"] },
+    { "column": 2, "row": 1, "brickType": "basic:blueberry", "hitPoints": 1, "tags": ["color:blue"] },
+    { "column": 7, "row": 1, "brickType": "basic:strawberry", "hitPoints": 1, "tags": ["color:red"] },
+    { "column": 3, "row": 2, "brickType": "basic:lemon", "hitPoints": 1, "tags": ["color:yellow"] },
+    { "column": 4, "row": 2, "brickType": "basic:lime", "hitPoints": 1, "tags": ["color:green"] },
+    { "column": 5, "row": 2, "brickType": "basic:grape", "hitPoints": 1, "tags": ["color:purple"] },
+    { "column": 6, "row": 2, "brickType": "basic:blueberry", "hitPoints": 1, "tags": ["color:blue"] },
+    { "column": 3, "row": 3, "brickType": "armored:rock", "hitPoints": 3, "tags": ["blocker:armored"] },
+    { "column": 6, "row": 3, "brickType": "armored:rock", "hitPoints": 3, "tags": ["blocker:armored"] },
+    { "column": 4, "row": 3, "brickType": "basic:rainbow", "hitPoints": 1, "tags": ["color:any"] },
+    { "column": 5, "row": 3, "brickType": "basic:rainbow", "hitPoints": 1, "tags": ["color:any"] },
+    { "column": 2, "row": 4, "brickType": "jelly:orange", "hitPoints": 2, "tags": ["color:orange", "blocker:jelly"] },
+    { "column": 7, "row": 4, "brickType": "jelly:orange", "hitPoints": 2, "tags": ["color:orange", "blocker:jelly"] },
+    { "column": 3, "row": 5, "brickType": "basic:lime", "hitPoints": 1, "tags": ["color:green"] },
+    { "column": 4, "row": 5, "brickType": "basic:grape", "hitPoints": 1, "tags": ["color:purple"] },
+    { "column": 5, "row": 5, "brickType": "basic:lemon", "hitPoints": 1, "tags": ["color:yellow"] },
+    { "column": 6, "row": 5, "brickType": "basic:blueberry", "hitPoints": 1, "tags": ["color:blue"] },
+    { "column": 3, "row": 6, "brickType": "basic:rainbow", "hitPoints": 1, "tags": ["color:any"] },
+    { "column": 4, "row": 6, "brickType": "basic:rainbow", "hitPoints": 1, "tags": ["color:any"] },
+    { "column": 5, "row": 6, "brickType": "basic:rainbow", "hitPoints": 1, "tags": ["color:any"] },
+    { "column": 6, "row": 6, "brickType": "basic:rainbow", "hitPoints": 1, "tags": ["color:any"] }
+  ],
+  "objectives": [
+    {
+      "id": "clear-rainbows",
+      "type": "clear-tagged-bricks",
+      "target": { "amount": 16, "trackedTags": ["color:any"] },
+      "optional": false,
+      "tags": ["primary", "color-clear"]
+    },
+    {
+      "id": "stop-sirens",
+      "type": "clear-tagged-bricks",
+      "target": { "amount": 2, "trackedTags": ["blocker:spawner"] },
+      "optional": false,
+      "tags": ["primary", "blocker-clear"]
+    },
+    {
+      "id": "max-score-1500",
+      "type": "score",
+      "target": { "amount": 1500 },
+      "optional": true,
+      "tags": ["bonus", "score"]
+    }
+  ],
+  "boosters": [
+    { "boosterId": "booster:multi-ball", "quantity": 1 },
+    { "boosterId": "booster:shield", "quantity": 1 },
+    { "boosterId": "booster:wide-paddle", "quantity": 1 }
+  ],
+  "rewardTiers": [
+    { "stars": 1, "rewards": [{ "type": "currency:coins", "quantity": 150 }] },
+    {
+      "stars": 2,
+      "rewards": [
+        { "type": "currency:coins", "quantity": 220 },
+        { "type": "booster:multi-ball", "quantity": 1 }
+      ]
+    },
+    {
+      "stars": 3,
+      "rewards": [
+        { "type": "currency:coins", "quantity": 320 },
+        { "type": "booster:rainbow-ball", "quantity": 2 }
+      ]
+    }
+  ]
+}

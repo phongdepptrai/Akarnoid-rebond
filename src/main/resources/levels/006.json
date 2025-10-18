@@ -1,0 +1,83 @@
+{
+  "id": "006",
+  "displayName": "Soda Rapids",
+  "description": "Ride the bubbling currents and drain the soda vents before they overflow.",
+  "difficulty": "STORY",
+  "board": {
+    "columns": 10,
+    "rows": 12
+  },
+  "constraints": {
+    "timeLimitSeconds": 200.0
+  },
+  "bricks": [
+    { "column": 2, "row": 1, "brickType": "basic:blueberry", "hitPoints": 1, "tags": ["color:blue"] },
+    { "column": 3, "row": 1, "brickType": "basic:lime", "hitPoints": 1, "tags": ["color:green"] },
+    { "column": 4, "row": 1, "brickType": "basic:blueberry", "hitPoints": 1, "tags": ["color:blue"] },
+    { "column": 5, "row": 1, "brickType": "basic:lime", "hitPoints": 1, "tags": ["color:green"] },
+    { "column": 6, "row": 1, "brickType": "basic:blueberry", "hitPoints": 1, "tags": ["color:blue"] },
+    { "column": 7, "row": 1, "brickType": "basic:lime", "hitPoints": 1, "tags": ["color:green"] },
+    { "column": 3, "row": 2, "brickType": "basic:rainbow", "hitPoints": 1, "tags": ["color:any"] },
+    { "column": 6, "row": 2, "brickType": "basic:rainbow", "hitPoints": 1, "tags": ["color:any"] },
+    { "column": 4, "row": 2, "brickType": "spawner:gum", "hitPoints": 3, "tags": ["blocker:spawner"] },
+    { "column": 5, "row": 2, "brickType": "spawner:gum", "hitPoints": 3, "tags": ["blocker:spawner"] },
+    { "column": 2, "row": 3, "brickType": "basic:blueberry", "hitPoints": 1, "tags": ["color:blue"] },
+    { "column": 7, "row": 3, "brickType": "basic:blueberry", "hitPoints": 1, "tags": ["color:blue"] },
+    { "column": 3, "row": 4, "brickType": "jelly:orange", "hitPoints": 2, "tags": ["color:orange", "blocker:jelly"] },
+    { "column": 6, "row": 4, "brickType": "jelly:orange", "hitPoints": 2, "tags": ["color:orange", "blocker:jelly"] },
+    { "column": 4, "row": 5, "brickType": "basic:lemon", "hitPoints": 1, "tags": ["color:yellow"] },
+    { "column": 5, "row": 5, "brickType": "basic:lemon", "hitPoints": 1, "tags": ["color:yellow"] },
+    { "column": 3, "row": 6, "brickType": "basic:lime", "hitPoints": 1, "tags": ["color:green"] },
+    { "column": 4, "row": 6, "brickType": "basic:blueberry", "hitPoints": 1, "tags": ["color:blue"] },
+    { "column": 5, "row": 6, "brickType": "basic:lime", "hitPoints": 1, "tags": ["color:green"] },
+    { "column": 6, "row": 6, "brickType": "basic:blueberry", "hitPoints": 1, "tags": ["color:blue"] },
+    { "column": 4, "row": 7, "brickType": "basic:rainbow", "hitPoints": 1, "tags": ["color:any"] },
+    { "column": 5, "row": 7, "brickType": "basic:rainbow", "hitPoints": 1, "tags": ["color:any"] },
+    { "column": 3, "row": 8, "brickType": "basic:lime", "hitPoints": 1, "tags": ["color:green"] },
+    { "column": 6, "row": 8, "brickType": "basic:lime", "hitPoints": 1, "tags": ["color:green"] }
+  ],
+  "objectives": [
+    {
+      "id": "drain-rapids",
+      "type": "clear-tagged-bricks",
+      "target": { "amount": 12, "trackedTags": ["color:blue"] },
+      "optional": false,
+      "tags": ["primary", "color-clear"]
+    },
+    {
+      "id": "pop-bubbles",
+      "type": "clear-tagged-bricks",
+      "target": { "amount": 4, "trackedTags": ["blocker:jelly"] },
+      "optional": false,
+      "tags": ["primary", "blocker-clear"]
+    },
+    {
+      "id": "snag-gems",
+      "type": "clear-tagged-bricks",
+      "target": { "amount": 2, "trackedTags": ["blocker:spawner"] },
+      "optional": true,
+      "tags": ["bonus", "blocker-clear"]
+    }
+  ],
+  "boosters": [
+    { "boosterId": "booster:shield", "quantity": 1 },
+    { "boosterId": "booster:aim-line", "quantity": 1 }
+  ],
+  "rewardTiers": [
+    { "stars": 1, "rewards": [{ "type": "currency:coins", "quantity": 90 }] },
+    {
+      "stars": 2,
+      "rewards": [
+        { "type": "currency:coins", "quantity": 150 },
+        { "type": "booster:shield", "quantity": 1 }
+      ]
+    },
+    {
+      "stars": 3,
+      "rewards": [
+        { "type": "currency:coins", "quantity": 230 },
+        { "type": "booster:multi-ball", "quantity": 1 }
+      ]
+    }
+  ]
+}

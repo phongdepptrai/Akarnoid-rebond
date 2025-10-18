@@ -1,0 +1,85 @@
+{
+  "id": "005",
+  "displayName": "Licorice Labyrinth",
+  "description": "Twist through licorice corridors and unlock the peppermint portals.",
+  "difficulty": "STORY",
+  "board": {
+    "columns": 10,
+    "rows": 12
+  },
+  "constraints": {
+    "timeLimitSeconds": 190.0
+  },
+  "bricks": [
+    { "column": 1, "row": 1, "brickType": "basic:strawberry", "hitPoints": 1, "tags": ["color:red"] },
+    { "column": 2, "row": 1, "brickType": "basic:blueberry", "hitPoints": 1, "tags": ["color:blue"] },
+    { "column": 3, "row": 1, "brickType": "basic:strawberry", "hitPoints": 1, "tags": ["color:red"] },
+    { "column": 6, "row": 1, "brickType": "basic:strawberry", "hitPoints": 1, "tags": ["color:red"] },
+    { "column": 7, "row": 1, "brickType": "basic:blueberry", "hitPoints": 1, "tags": ["color:blue"] },
+    { "column": 8, "row": 1, "brickType": "basic:strawberry", "hitPoints": 1, "tags": ["color:red"] },
+    { "column": 2, "row": 2, "brickType": "locked:mint", "hitPoints": 2, "tags": ["color:green", "blocker:lock"] },
+    { "column": 7, "row": 2, "brickType": "locked:mint", "hitPoints": 2, "tags": ["color:green", "blocker:lock"] },
+    { "column": 3, "row": 2, "brickType": "basic:lemon", "hitPoints": 1, "tags": ["color:yellow"] },
+    { "column": 6, "row": 2, "brickType": "basic:lemon", "hitPoints": 1, "tags": ["color:yellow"] },
+    { "column": 4, "row": 3, "brickType": "basic:rainbow", "hitPoints": 1, "tags": ["color:any"] },
+    { "column": 5, "row": 3, "brickType": "basic:rainbow", "hitPoints": 1, "tags": ["color:any"] },
+    { "column": 1, "row": 3, "brickType": "spawner:gum", "hitPoints": 3, "tags": ["blocker:spawner"] },
+    { "column": 8, "row": 3, "brickType": "spawner:gum", "hitPoints": 3, "tags": ["blocker:spawner"] },
+    { "column": 2, "row": 4, "brickType": "basic:blueberry", "hitPoints": 1, "tags": ["color:blue"] },
+    { "column": 7, "row": 4, "brickType": "basic:blueberry", "hitPoints": 1, "tags": ["color:blue"] },
+    { "column": 3, "row": 4, "brickType": "basic:strawberry", "hitPoints": 2, "tags": ["color:red"] },
+    { "column": 6, "row": 4, "brickType": "basic:strawberry", "hitPoints": 2, "tags": ["color:red"] },
+    { "column": 4, "row": 5, "brickType": "jelly:orange", "hitPoints": 2, "tags": ["color:orange", "blocker:jelly"] },
+    { "column": 5, "row": 5, "brickType": "jelly:orange", "hitPoints": 2, "tags": ["color:orange", "blocker:jelly"] },
+    { "column": 4, "row": 6, "brickType": "basic:rainbow", "hitPoints": 1, "tags": ["color:any"] },
+    { "column": 5, "row": 6, "brickType": "basic:rainbow", "hitPoints": 1, "tags": ["color:any"] },
+    { "column": 3, "row": 7, "brickType": "basic:lemon", "hitPoints": 1, "tags": ["color:yellow"] },
+    { "column": 6, "row": 7, "brickType": "basic:lemon", "hitPoints": 1, "tags": ["color:yellow"] },
+    { "column": 2, "row": 8, "brickType": "basic:strawberry", "hitPoints": 1, "tags": ["color:red"] },
+    { "column": 7, "row": 8, "brickType": "basic:strawberry", "hitPoints": 1, "tags": ["color:red"] }
+  ],
+  "objectives": [
+    {
+      "id": "clear-licorice",
+      "type": "clear-tagged-bricks",
+      "target": { "amount": 10, "trackedTags": ["color:red"] },
+      "optional": false,
+      "tags": ["primary", "color-clear"]
+    },
+    {
+      "id": "open-portals",
+      "type": "clear-tagged-bricks",
+      "target": { "amount": 2, "trackedTags": ["blocker:lock"] },
+      "optional": false,
+      "tags": ["primary", "blocker-clear"]
+    },
+    {
+      "id": "gum-cleanup",
+      "type": "clear-tagged-bricks",
+      "target": { "amount": 2, "trackedTags": ["blocker:spawner"] },
+      "optional": true,
+      "tags": ["bonus", "blocker-clear"]
+    }
+  ],
+  "boosters": [
+    { "boosterId": "booster:aim-line", "quantity": 1 },
+    { "boosterId": "booster:multi-ball", "quantity": 1 }
+  ],
+  "rewardTiers": [
+    { "stars": 1, "rewards": [{ "type": "currency:coins", "quantity": 75 }] },
+    {
+      "stars": 2,
+      "rewards": [
+        { "type": "currency:coins", "quantity": 130 },
+        { "type": "booster:aim-line", "quantity": 1 }
+      ]
+    },
+    {
+      "stars": 3,
+      "rewards": [
+        { "type": "currency:coins", "quantity": 200 },
+        { "type": "booster:shield", "quantity": 1 }
+      ]
+    }
+  ]
+}

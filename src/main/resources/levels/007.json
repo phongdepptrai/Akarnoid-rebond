@@ -1,0 +1,79 @@
+{
+  "id": "007",
+  "displayName": "Molten Nougat Forge",
+  "description": "Smelt the armored nougat cores and ignite the forge runes to progress.",
+  "difficulty": "STORY",
+  "board": {
+    "columns": 10,
+    "rows": 12
+  },
+  "constraints": {
+    "timeLimitSeconds": 210.0
+  },
+  "bricks": [
+    { "column": 3, "row": 0, "brickType": "spawner:slime", "hitPoints": 3, "tags": ["blocker:spawner"] },
+    { "column": 6, "row": 0, "brickType": "spawner:slime", "hitPoints": 3, "tags": ["blocker:spawner"] },
+    { "column": 2, "row": 1, "brickType": "armored:rock", "hitPoints": 3, "tags": ["blocker:armored"] },
+    { "column": 7, "row": 1, "brickType": "armored:rock", "hitPoints": 3, "tags": ["blocker:armored"] },
+    { "column": 3, "row": 1, "brickType": "basic:strawberry", "hitPoints": 1, "tags": ["color:red"] },
+    { "column": 4, "row": 1, "brickType": "basic:lemon", "hitPoints": 1, "tags": ["color:yellow"] },
+    { "column": 5, "row": 1, "brickType": "basic:lemon", "hitPoints": 1, "tags": ["color:yellow"] },
+    { "column": 6, "row": 1, "brickType": "basic:strawberry", "hitPoints": 1, "tags": ["color:red"] },
+    { "column": 2, "row": 2, "brickType": "basic:rainbow", "hitPoints": 1, "tags": ["color:any"] },
+    { "column": 7, "row": 2, "brickType": "basic:rainbow", "hitPoints": 1, "tags": ["color:any"] },
+    { "column": 3, "row": 3, "brickType": "basic:lemon", "hitPoints": 1, "tags": ["color:yellow"] },
+    { "column": 6, "row": 3, "brickType": "basic:lemon", "hitPoints": 1, "tags": ["color:yellow"] },
+    { "column": 4, "row": 3, "brickType": "armored:rock", "hitPoints": 3, "tags": ["blocker:armored"] },
+    { "column": 5, "row": 3, "brickType": "armored:rock", "hitPoints": 3, "tags": ["blocker:armored"] },
+    { "column": 2, "row": 4, "brickType": "basic:strawberry", "hitPoints": 1, "tags": ["color:red"] },
+    { "column": 7, "row": 4, "brickType": "basic:strawberry", "hitPoints": 1, "tags": ["color:red"] },
+    { "column": 3, "row": 5, "brickType": "jelly:orange", "hitPoints": 2, "tags": ["color:orange", "blocker:jelly"] },
+    { "column": 6, "row": 5, "brickType": "jelly:orange", "hitPoints": 2, "tags": ["color:orange", "blocker:jelly"] },
+    { "column": 4, "row": 6, "brickType": "basic:rainbow", "hitPoints": 1, "tags": ["color:any"] },
+    { "column": 5, "row": 6, "brickType": "basic:rainbow", "hitPoints": 1, "tags": ["color:any"] }
+  ],
+  "objectives": [
+    {
+      "id": "shatter-armor",
+      "type": "clear-tagged-bricks",
+      "target": { "amount": 4, "trackedTags": ["blocker:armored"] },
+      "optional": false,
+      "tags": ["primary", "blocker-clear"]
+    },
+    {
+      "id": "ignite-cores",
+      "type": "clear-tagged-bricks",
+      "target": { "amount": 8, "trackedTags": ["color:yellow"] },
+      "optional": false,
+      "tags": ["primary", "color-clear"]
+    },
+    {
+      "id": "rescue-sparks",
+      "type": "clear-tagged-bricks",
+      "target": { "amount": 2, "trackedTags": ["blocker:spawner"] },
+      "optional": true,
+      "tags": ["bonus", "blocker-clear"]
+    }
+  ],
+  "boosters": [
+    { "boosterId": "booster:multi-ball", "quantity": 1 },
+    { "boosterId": "booster:shield", "quantity": 1 }
+  ],
+  "rewardTiers": [
+    { "stars": 1, "rewards": [{ "type": "currency:coins", "quantity": 100 }] },
+    {
+      "stars": 2,
+      "rewards": [
+        { "type": "currency:coins", "quantity": 160 },
+        { "type": "booster:multi-ball", "quantity": 1 }
+      ]
+    },
+    {
+      "stars": 3,
+      "rewards": [
+        { "type": "currency:coins", "quantity": 240 },
+        { "type": "booster:rainbow-ball", "quantity": 1 }
+      ]
+    }
+  ]
+}

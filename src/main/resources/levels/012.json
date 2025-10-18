@@ -1,0 +1,81 @@
+{
+  "id": "012",
+  "displayName": "Gumdrop Grove",
+  "description": "Gather the gumdrops and chain together sticky combos for a sweet burst.",
+  "difficulty": "STORY",
+  "board": {
+    "columns": 10,
+    "rows": 12
+  },
+  "constraints": {
+    "timeLimitSeconds": 230.0
+  },
+  "bricks": [
+    { "column": 2, "row": 1, "brickType": "basic:lime", "hitPoints": 1, "tags": ["color:green"] },
+    { "column": 3, "row": 1, "brickType": "basic:grape", "hitPoints": 1, "tags": ["color:purple"] },
+    { "column": 4, "row": 1, "brickType": "basic:lime", "hitPoints": 1, "tags": ["color:green"] },
+    { "column": 5, "row": 1, "brickType": "basic:grape", "hitPoints": 1, "tags": ["color:purple"] },
+    { "column": 6, "row": 1, "brickType": "basic:lime", "hitPoints": 1, "tags": ["color:green"] },
+    { "column": 7, "row": 1, "brickType": "basic:grape", "hitPoints": 1, "tags": ["color:purple"] },
+    { "column": 2, "row": 2, "brickType": "basic:rainbow", "hitPoints": 1, "tags": ["color:any"] },
+    { "column": 3, "row": 2, "brickType": "basic:rainbow", "hitPoints": 1, "tags": ["color:any"] },
+    { "column": 6, "row": 2, "brickType": "basic:rainbow", "hitPoints": 1, "tags": ["color:any"] },
+    { "column": 7, "row": 2, "brickType": "basic:rainbow", "hitPoints": 1, "tags": ["color:any"] },
+    { "column": 3, "row": 3, "brickType": "spawner:gum", "hitPoints": 3, "tags": ["blocker:spawner"] },
+    { "column": 6, "row": 3, "brickType": "spawner:gum", "hitPoints": 3, "tags": ["blocker:spawner"] },
+    { "column": 4, "row": 3, "brickType": "basic:lime", "hitPoints": 1, "tags": ["color:green"] },
+    { "column": 5, "row": 3, "brickType": "basic:grape", "hitPoints": 1, "tags": ["color:purple"] },
+    { "column": 2, "row": 4, "brickType": "basic:lime", "hitPoints": 1, "tags": ["color:green"] },
+    { "column": 7, "row": 4, "brickType": "basic:grape", "hitPoints": 1, "tags": ["color:purple"] },
+    { "column": 3, "row": 5, "brickType": "basic:rainbow", "hitPoints": 1, "tags": ["color:any"] },
+    { "column": 6, "row": 5, "brickType": "basic:rainbow", "hitPoints": 1, "tags": ["color:any"] },
+    { "column": 4, "row": 6, "brickType": "basic:lime", "hitPoints": 1, "tags": ["color:green"] },
+    { "column": 5, "row": 6, "brickType": "basic:grape", "hitPoints": 1, "tags": ["color:purple"] },
+    { "column": 2, "row": 7, "brickType": "basic:lemon", "hitPoints": 1, "tags": ["color:yellow"] },
+    { "column": 7, "row": 7, "brickType": "basic:lemon", "hitPoints": 1, "tags": ["color:yellow"] }
+  ],
+  "objectives": [
+    {
+      "id": "gather-gumdrops",
+      "type": "clear-tagged-bricks",
+      "target": { "amount": 12, "trackedTags": ["color:green"] },
+      "optional": false,
+      "tags": ["primary", "color-clear"]
+    },
+    {
+      "id": "double-hits",
+      "type": "clear-tagged-bricks",
+      "target": { "amount": 10, "trackedTags": ["color:purple"] },
+      "optional": false,
+      "tags": ["primary", "color-clear"]
+    },
+    {
+      "id": "combo-chain",
+      "type": "clear-tagged-bricks",
+      "target": { "amount": 2, "trackedTags": ["blocker:spawner"] },
+      "optional": true,
+      "tags": ["bonus", "blocker-clear"]
+    }
+  ],
+  "boosters": [
+    { "boosterId": "booster:multi-ball", "quantity": 1 },
+    { "boosterId": "booster:aim-line", "quantity": 1 }
+  ],
+  "rewardTiers": [
+    { "stars": 1, "rewards": [{ "type": "currency:coins", "quantity": 130 }] },
+    {
+      "stars": 2,
+      "rewards": [
+        { "type": "currency:coins", "quantity": 190 },
+        { "type": "booster:multi-ball", "quantity": 1 }
+      ]
+    },
+    {
+      "stars": 3,
+      "rewards": [
+        { "type": "currency:coins", "quantity": 280 },
+        { "type": "booster:rainbow-ball", "quantity": 1 }
+      ]
+    }
+  ]
+}
