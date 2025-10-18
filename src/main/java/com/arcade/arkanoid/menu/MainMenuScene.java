@@ -312,7 +312,7 @@ public class MainMenuScene extends Scene {
                 // Draw planets with pulsing opacity
                 if (backgroundImage != null) {
                     // Create pulsing effect (slow fade in/out cycle)
-                    float planetOpacity = (float)(0.3 + 0.7 * Math.abs(Math.sin(animationTime * 0.4)));
+                    float planetOpacity = (float)(0.3 + 0.7 * Math.abs(Math.sin(animationTime * 0.7)));
                     
                     java.awt.AlphaComposite alphaComposite = java.awt.AlphaComposite.getInstance(
                         java.awt.AlphaComposite.SRC_OVER, planetOpacity
