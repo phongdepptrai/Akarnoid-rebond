@@ -2,6 +2,7 @@ package com.arcade.arkanoid.menu.worldmap;
 
 import com.arcade.arkanoid.ArkanoidGame;
 import com.arcade.arkanoid.engine.core.GameContext;
+import com.arcade.arkanoid.engine.assets.AssetManager;
 import com.arcade.arkanoid.engine.input.InputManager;
 import com.arcade.arkanoid.engine.scene.Scene;
 import com.arcade.arkanoid.gameplay.GameplayScene;
@@ -18,6 +19,7 @@ import java.awt.RenderingHints;
 import java.awt.geom.Rectangle2D;
 import java.awt.event.KeyEvent;
 import java.awt.geom.Ellipse2D;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -33,13 +35,25 @@ public class WorldMapScene extends Scene {
     private final LocalizationService localization;
     private final List<Star> starField = new ArrayList<>();
     private final Random random = new Random();
+    private static final int VISIBLE_NODES = 3;
     private int selectedIndex;
     private String statusMessage = "";
     private double animationTime = 0.0;
+    private double mapOffset = 0.0;
+    private double mapTargetOffset = 0.0;
+    private double stepX = 220.0;
+    private double startX = 120.0;
+    private double maxOffset = 0.0;
+    private BufferedImage mapBackground;
 
     public WorldMapScene(GameContext context) {
         super(context);
         this.localization = context.getLocalizationService();
+        AssetManager assets = context.getAssets();
+        if (assets.getImage("background") == null) {
+            assets.loadImage("background", "/graphics/background.jpg");
+        }
+        this.mapBackground = assets.getImage("background");
         generateStarField();
     }
 
@@ -48,6 +62,10 @@ public class WorldMapScene extends Scene {
         rebuildNodes();
         selectedIndex = Math.min(selectedIndex, nodes.size() - 1);
         statusMessage = "";
+        mapOffset = 0.0;
+        mapTargetOffset = 0.0;
+        updateSelection(selectedIndex);
+        mapOffset = mapTargetOffset;
     }
 
     @Override
@@ -62,13 +80,17 @@ public class WorldMapScene extends Scene {
             return;
         }
         if (input.isKeyJustPressed(KeyEvent.VK_RIGHT) || input.isKeyJustPressed(KeyEvent.VK_D)) {
-            selectedIndex = Math.min(selectedIndex + 1, nodes.size() - 1);
-            statusMessage = nodes.get(selectedIndex).getGateMessage();
+            updateSelection(Math.min(selectedIndex + 1, nodes.size() - 1));
         } else if (input.isKeyJustPressed(KeyEvent.VK_LEFT) || input.isKeyJustPressed(KeyEvent.VK_A)) {
-            selectedIndex = Math.max(selectedIndex - 1, 0);
-            statusMessage = nodes.get(selectedIndex).getGateMessage();
+            updateSelection(Math.max(selectedIndex - 1, 0));
         } else if (input.isKeyJustPressed(KeyEvent.VK_ENTER) || input.isKeyJustPressed(KeyEvent.VK_SPACE)) {
             attemptStartLevel(nodes.get(selectedIndex));
+        }
+        double diff = mapTargetOffset - mapOffset;
+        if (Math.abs(diff) > 0.5) {
+            mapOffset += diff * Math.min(1.0, deltaTime * 8.0);
+        } else {
+            mapOffset = mapTargetOffset;
         }
     }
 
@@ -87,16 +109,16 @@ public class WorldMapScene extends Scene {
         String currentLevelId = profile.getCurrentLevelId();
 
         int width = context.getConfig().width();
-        int startX = 120;
         int total = Math.max(1, levelManager.totalLevels());
-        int stepX = total == 1 ? 0 : (width - 240) / (total - 1);
+        stepX = 240.0;
+        startX = (width - stepX * (VISIBLE_NODES - 1)) / 2.0;
         int centerY = context.getConfig().height() / 2;
 
         levelManager.reset();
         int selection = 0;
         for (int i = 0; i < total; i++) {
             LevelDefinition definition = levelManager.current();
-            int x = startX + i * stepX;
+            int x = (int) Math.round(startX + i * stepX);
             LevelNode node = new LevelNode(definition, i, new java.awt.Rectangle(x - 30, centerY - 30, 60, 60));
             boolean unlocked = profile.isLevelUnlocked(definition.id());
             node.setUnlocked(unlocked);
@@ -116,11 +138,12 @@ public class WorldMapScene extends Scene {
         }
         levelManager.resetToLevel(currentLevelId);
         selectedIndex = selection;
-        if (!nodes.isEmpty()) {
-            statusMessage = nodes.get(selectedIndex).getGateMessage();
-        } else {
-            statusMessage = "";
-        }
+        maxOffset = Math.max(0.0, (nodes.size() - VISIBLE_NODES) * stepX);
+        mapOffset = Math.min(mapOffset, maxOffset);
+        mapTargetOffset = Math.min(mapTargetOffset, maxOffset);
+        updateSelection(selectedIndex);
+        mapTargetOffset = Math.min(mapTargetOffset, maxOffset);
+        mapOffset = mapTargetOffset;
     }
 
     private void attemptStartLevel(LevelNode node) {
@@ -148,13 +171,17 @@ public class WorldMapScene extends Scene {
     }
 
     private void drawNodes(Graphics2D graphics) {
+        int screenWidth = context.getConfig().width();
         for (int i = 0; i < nodes.size(); i++) {
             LevelNode node = nodes.get(i);
             Rectangle2D bounds = node.getBounds();
-            double baseX = bounds.getX();
+            double baseX = bounds.getX() - mapOffset;
             double baseY = bounds.getY();
             double width = bounds.getWidth();
             double height = bounds.getHeight();
+            if (baseX + width < -100 || baseX > screenWidth + 100) {
+                continue;
+            }
 
             if (i == selectedIndex) {
                 double pulse = 8 + 4 * Math.sin(animationTime * 4);
@@ -212,10 +239,13 @@ public class WorldMapScene extends Scene {
             LevelNode from = nodes.get(i);
             LevelNode to = nodes.get(i + 1);
             graphics.setColor(from.isUnlocked() && to.isUnlocked() ? new Color(0x4CAF50) : new Color(90, 90, 110));
-            int x1 = from.getBounds().x + from.getBounds().width / 2;
+            int x1 = (int) (from.getBounds().x + from.getBounds().width / 2 - mapOffset);
             int y1 = from.getBounds().y + from.getBounds().height / 2;
-            int x2 = to.getBounds().x + to.getBounds().width / 2;
+            int x2 = (int) (to.getBounds().x + to.getBounds().width / 2 - mapOffset);
             int y2 = to.getBounds().y + to.getBounds().height / 2;
+            if ((x1 < -100 && x2 < -100) || (x1 > context.getConfig().width() + 100 && x2 > context.getConfig().width() + 100)) {
+                continue;
+            }
             graphics.drawLine(x1, y1, x2, y2);
         }
     }
@@ -238,19 +268,46 @@ public class WorldMapScene extends Scene {
     private void drawBackground(Graphics2D graphics) {
         int width = context.getConfig().width();
         int height = context.getConfig().height();
-        Color top = new Color(10, 15, 35);
-        Color bottom = new Color(5, 5, 15);
-        graphics.setPaint(new java.awt.GradientPaint(0, 0, top, 0, height, bottom));
-        graphics.fillRect(0, 0, width, height);
+        if (mapBackground != null) {
+            int bgW = mapBackground.getWidth();
+            int bgH = mapBackground.getHeight();
+            double scale = Math.max(width / (double) bgW, height / (double) bgH);
+            int drawW = (int) Math.round(bgW * scale);
+            int drawH = (int) Math.round(bgH * scale);
+            int maxShift = Math.max(0, drawW - width);
+            int offsetX = maxOffset > 0
+                    ? -(int) Math.round((mapOffset / maxOffset) * maxShift)
+                    : -(maxShift / 2);
+            int offsetY = (height - drawH) / 2;
+            graphics.drawImage(mapBackground, offsetX, offsetY, drawW, drawH, null);
+        } else {
+            Color top = new Color(10, 15, 35);
+            Color bottom = new Color(5, 5, 15);
+            graphics.setPaint(new java.awt.GradientPaint(0, 0, top, 0, height, bottom));
+            graphics.fillRect(0, 0, width, height);
+        }
         for (Star star : starField) {
             float alpha = (float) (star.baseAlpha + 0.3 * Math.sin(animationTime * star.twinkleSpeed + star.phase));
-            alpha = Math.max(0.05f, Math.min(alpha, 1f));
+            alpha = Math.max(0.05f, Math.min(alpha, 0.8f));
             graphics.setColor(new Color(1f, 1f, 1f, alpha));
             graphics.fillRect(star.x, star.y, star.size, star.size);
         }
-        graphics.setColor(new Color(38, 50, 56, 180));
-        graphics.setStroke(new BasicStroke(4));
-        graphics.drawRoundRect(30, 40, width - 60, height - 80, 30, 30);
+        graphics.setColor(new Color(0, 0, 0, 120));
+        graphics.fillRect(0, 0, width, height);
+    }
+
+    private void updateSelection(int newIndex) {
+        if (nodes.isEmpty()) {
+            selectedIndex = 0;
+            mapTargetOffset = 0.0;
+            return;
+        }
+        int clamped = Math.max(0, Math.min(newIndex, nodes.size() - 1));
+        selectedIndex = clamped;
+        statusMessage = nodes.get(selectedIndex).getGateMessage();
+        int centerIndex = VISIBLE_NODES / 2;
+        double desired = (selectedIndex - centerIndex) * stepX;
+        mapTargetOffset = Math.max(0.0, Math.min(desired, maxOffset));
     }
 
     private void generateStarField() {
