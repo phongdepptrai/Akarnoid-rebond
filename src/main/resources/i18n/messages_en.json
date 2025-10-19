@@ -3,6 +3,7 @@
   "menu.startNew": "Start New Game",
   "menu.resume": "Resume Game",
   "menu.worldMap": "World Map",
+  "menu.saveSlots": "Save Slots",
   "menu.exit": "Exit",
   "menu.status.lives": "Lives: {0}/{1}",
   "menu.status.coins": "Coins: {0}",
@@ -73,5 +74,18 @@
   "objective.combo-chain": "Break sticky spawners (bonus)",
   "objective.clear-rainbows": "Clear rainbow tiles",
   "objective.stop-sirens": "Silence the siren spawners",
-  "objective.max-score-1500": "Score 1500 points (bonus)"
+  "objective.max-score-1500": "Score 1500 points (bonus)",
+  "saveMenu.title": "Select Save Slot",
+  "saveMenu.instructions": "Enter: Play/Create • Delete: Delete save • ESC: Back",
+  "saveMenu.empty": "Empty slot available.",
+  "saveMenu.emptyHint": "Press Enter to create a new adventure.",
+  "saveMenu.emptyName": "Empty Slot",
+  "saveMenu.slotLabel": "Slot {0}: {1}",
+  "saveMenu.summary": "Level {0} • Lives {1} • Coins {2} • Streak {3}",
+  "saveMenu.neverPlayed": "Never played",
+  "saveMenu.lastPlayed": "Last played: {0}",
+  "saveMenu.slotLoaded": "Loaded {0}",
+  "saveMenu.slotCreated": "Created {0}",
+  "saveMenu.slotDeleted": "Deleted {0}",
+  "saveMenu.defaultName": "Player {0}"
 }

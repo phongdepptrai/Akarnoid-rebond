@@ -32,10 +32,9 @@ import javax.imageio.ImageIO;
 
 public class MainMenuScene extends Scene {
     private enum MenuAction {
-        START_NEW,
-        START,
-        RESUME,
         WORLD_MAP,
+        RESUME,
+        SAVE_SLOTS,
         EXIT
     }
 
@@ -75,8 +74,8 @@ public class MainMenuScene extends Scene {
         GameplayScene gameplay = (GameplayScene) context.getScenes().getPersistentScene(ArkanoidGame.SCENE_GAMEPLAY);
         boolean resumeAvailable = gameplay != null && gameplay.isSessionActive();
         options = resumeAvailable
-                ? new MenuAction[]{MenuAction.START_NEW, MenuAction.RESUME, MenuAction.WORLD_MAP, MenuAction.EXIT}
-                : new MenuAction[]{MenuAction.START, MenuAction.WORLD_MAP, MenuAction.EXIT};
+                ? new MenuAction[]{MenuAction.WORLD_MAP, MenuAction.RESUME, MenuAction.SAVE_SLOTS, MenuAction.EXIT}
+                : new MenuAction[]{MenuAction.WORLD_MAP, MenuAction.SAVE_SLOTS, MenuAction.EXIT};
         selectedIndex = 0;
     }
 
@@ -111,22 +110,16 @@ public class MainMenuScene extends Scene {
         MenuAction action = options[selectedIndex];
         GameplayScene gameplay = (GameplayScene) context.getScenes().getPersistentScene(ArkanoidGame.SCENE_GAMEPLAY);
         switch (action) {
-            case START_NEW:
-            case START:
-                context.getProfileManager().getActiveProfile().setCurrentLevelId("001");
-                context.getProfileManager().saveProfile();
-                if (gameplay != null) {
-                    gameplay.beginNewSession();
-                }
-                context.getScenes().switchTo(ArkanoidGame.SCENE_GAMEPLAY);
+            case WORLD_MAP:
+                context.getScenes().switchTo(ArkanoidGame.SCENE_MAP);
                 break;
             case RESUME:
                 if (gameplay != null && gameplay.isSessionActive()) {
                     context.getScenes().switchTo(ArkanoidGame.SCENE_GAMEPLAY);
                 }
                 break;
-            case WORLD_MAP:
-                context.getScenes().switchTo(ArkanoidGame.SCENE_MAP);
+            case SAVE_SLOTS:
+                context.getScenes().switchTo(ArkanoidGame.SCENE_SAVE);
                 break;
             case EXIT:
                 context.getGame().stop();
@@ -139,14 +132,12 @@ public class MainMenuScene extends Scene {
 
     private String labelFor(MenuAction action) {
         switch (action) {
-            case START_NEW:
-                return localization.translate("menu.startNew");
-            case START:
-                return localization.translate("menu.start");
             case RESUME:
                 return localization.translate("menu.resume");
             case WORLD_MAP:
                 return localization.translate("menu.worldMap");
+            case SAVE_SLOTS:
+                return localization.translate("menu.saveSlots");
             case EXIT:
                 return localization.translate("menu.exit");
             default:
