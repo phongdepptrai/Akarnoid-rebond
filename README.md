@@ -1,12 +1,15 @@
 # Arkanoid Reborn
 
-A modern, object-oriented Arkanoid clone built with Java Swing. The project ships with a lightweight 2D game engine that provides scene management, the render loop, input handling, and basic asset/sound plumbing.
+A modern, feature-rich Arkanoid clone built with Java Swing. The project includes a lightweight 2D game engine with comprehensive game systems including progression, economy, localization, and profile management.
 
 ## Highlights
-- Scene-based architecture with reusable `Gameplay`, `MainMenu`, and `Pause` scenes.
-- Deterministic fixed-timestep game loop, buffered rendering, and responsive keyboard input.
-- Dynamic level loader with multiple stages, brick strengths, score tracking, and lives.
-- Power-up system (expand paddle, slow ball), HUD overlay, pause menu, and keyboard-driven UI.
+- **Scene-based architecture**: Reusable scenes including `Gameplay`, `MainMenu`, `WorldMap`, `Pause`, and save management.
+- **Game engine**: Deterministic fixed-timestep game loop, buffered rendering, responsive input handling, and asset management.
+- **Dynamic level system**: Multiple stages with varying brick strengths, objectives, and progression tracking.
+- **Power-up system**: Expand paddle, slow ball, multi-ball, and more with visual effects.
+- **Economy & progression**: Currency system, shop, upgrades, and unlockable content.
+- **Profile management**: Multiple save slots with persistent game state and statistics.
+- **Localization support**: Multi-language support with JSON-based translation system.
 - **Modern build system**: Maven for dependency management with familiar Makefile interface.
 - **Professional testing**: JUnit 5 integration with comprehensive test framework.
 - **Cross-platform**: Works on Windows, Linux, macOS with consistent commands.
@@ -90,18 +93,84 @@ class YourClassTest {
 ```
 ├── pom.xml                             # Maven configuration & dependencies
 ├── Makefile                            # Convenient wrapper around Maven commands
-├── src/main/java/com/arcade/arkanoid/
-│   ├── ArcadeLauncher.java             # Entry point
-│   ├── ArkanoidGame.java               # Game bootstrap & scene registration
-│   ├── engine/                         # Lightweight engine (core loop, scene manager, input, assets, audio)
-│   ├── gameplay/                       # Gameplay logic, entities, levels, HUD rendering
-│   └── menu/                           # Menu & pause scenes
-├── src/test/java/                      # JUnit 5 test sources
-├── target/                             # Maven build output
-│   ├── classes/                        # Compiled main classes
-│   └── test-classes/                   # Compiled test classes
-└── docs/                               # Documentation (MAVEN_SETUP.md, BUILD_SYSTEM_MIGRATION.md)
+├── src/
+│   ├── main/
+│   │   ├── java/com/arcade/arkanoid/
+│   │   │   ├── ArcadeLauncher.java    # Application entry point
+│   │   │   ├── ArkanoidGame.java      # Game bootstrap & scene registration
+│   │   │   ├── core/                  # Core utilities and project paths
+│   │   │   ├── economy/               # Currency, shop, and economy system
+│   │   │   ├── engine/                # Lightweight 2D game engine
+│   │   │   │   ├── assets/            # Asset loading and management
+│   │   │   │   ├── audio/             # Audio system and sound effects
+│   │   │   │   ├── core/              # Core game loop and configuration
+│   │   │   │   ├── input/             # Keyboard and input handling
+│   │   │   │   ├── scene/             # Scene management system
+│   │   │   │   ├── settings/          # Game settings and preferences
+│   │   │   │   └── util/              # Engine utilities
+│   │   │   ├── gameplay/              # Core gameplay systems
+│   │   │   │   ├── entities/          # Game entities (Ball, Paddle, Brick, etc.)
+│   │   │   │   ├── levels/            # Level loading and management
+│   │   │   │   ├── objectives/        # Level objectives and completion tracking
+│   │   │   │   └── system/            # Gameplay systems (physics, collision, etc.)
+│   │   │   ├── localization/          # Multi-language support system
+│   │   │   ├── menu/                  # Menu scenes and UI
+│   │   │   │   ├── save/              # Save/load game functionality
+│   │   │   │   └── worldmap/          # World map and level selection
+│   │   │   └── profile/               # Player profile and progression
+│   │   └── resources/
+│   │       ├── fonts/                 # Game fonts
+│   │       ├── graphics/              # Sprites, textures, and UI assets
+│   │       ├── i18n/                  # Translation files (JSON)
+│   │       │   └── messages_en.json   # English translations
+│   │       └── levels/                # Level definitions (JSON)
+│   │           ├── manifest.json      # Level manifest and metadata
+│   │           └── 001.json - 013.json # Individual level files
+│   └── test/java/                     # JUnit 5 test sources
+├── data/                               # Runtime data directory
+│   ├── profiles/                      # Player profile save files
+│   │   ├── default-profile.json       # Default profile template
+│   │   └── save-slot-*.json           # Player save slots (1-4)
+│   ├── saves/                         # Game save states
+│   └── screenshots/                   # Screenshot storage
+├── target/                            # Maven build output
+│   ├── classes/                       # Compiled main classes + resources
+│   ├── test-classes/                  # Compiled test classes
+│   └── surefire-reports/              # Test execution reports
+├── build/                             # Additional build artifacts
+└── lib/                               # External libraries (if any)
 ```
+
+## Key Features
+
+### 🎮 Gameplay Systems
+- **Dynamic Level System**: 13+ levels with progressive difficulty and unique layouts
+- **Power-ups**: Multiple power-ups including paddle expansion, ball slowdown, multi-ball, and more
+- **Objectives**: Level-specific objectives and completion tracking
+- **Physics**: Realistic ball physics with collision detection and response
+
+### 💰 Economy & Progression
+- **Currency System**: Earn coins by completing levels and achieving objectives
+- **Shop**: Purchase upgrades, power-ups, and cosmetic items
+- **Upgrades**: Permanent upgrades that enhance gameplay (stronger paddle, extra lives, etc.)
+- **Unlockables**: Unlock new levels, power-ups, and features through progression
+
+### 👤 Profile Management
+- **Multiple Save Slots**: Up to 4 independent player profiles
+- **Persistent Progress**: Automatic saving of level completion, currency, and unlocks
+- **Statistics Tracking**: Track high scores, total playtime, and achievements
+- **Profile Customization**: Personalize player name and settings per profile
+
+### 🌍 Localization
+- **Multi-language Support**: Extensible JSON-based translation system
+- **Easy Translation**: Add new languages by creating translation JSON files
+- **Dynamic Language Switching**: Change language without restarting the game
+
+### 🎨 Visual & Audio
+- **Retro Graphics**: Classic arcade-style pixel art and animations
+- **Sound Effects**: Immersive audio feedback for actions and events
+- **Particle Effects**: Visual effects for power-ups and special events
+- **Smooth Animations**: 60 FPS gameplay with interpolated rendering
 
 ## Development Workflow
 
@@ -124,4 +193,33 @@ make run                # Test your changes
 make package            # Create distributable JAR
 make verify             # Run full validation suite
 ```
+
+## Architecture Overview
+
+### Engine Layer
+The custom 2D game engine provides:
+- Fixed-timestep game loop with delta time interpolation
+- Scene-based state management with transitions
+- Asset loading and caching system
+- Input handling with key mapping
+- Audio system with sound effect management
+- Configuration and settings persistence
+
+### Game Layer
+Built on top of the engine:
+- Entity-component architecture for game objects
+- Level loading from JSON definitions
+- Collision detection and physics simulation
+- HUD and UI rendering system
+- Save/load functionality
+- Profile and progression tracking
+
+### Module Organization
+- **`core/`**: Project-wide utilities and path management
+- **`economy/`**: Currency, shop, and purchase system
+- **`engine/`**: Reusable game engine components
+- **`gameplay/`**: Game-specific logic and entities
+- **`localization/`**: Translation and multi-language support
+- **`menu/`**: Menu scenes and UI components
+- **`profile/`**: Player data and progression management
 
