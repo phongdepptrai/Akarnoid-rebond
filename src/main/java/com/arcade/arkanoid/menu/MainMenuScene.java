@@ -33,6 +33,7 @@ import javax.imageio.ImageIO;
 public class MainMenuScene extends Scene {
     private enum MenuAction {
         WORLD_MAP,
+        SHOP,
         RESUME,
         SAVE_SLOTS,
         EXIT
@@ -74,8 +75,8 @@ public class MainMenuScene extends Scene {
         GameplayScene gameplay = (GameplayScene) context.getScenes().getPersistentScene(ArkanoidGame.SCENE_GAMEPLAY);
         boolean resumeAvailable = gameplay != null && gameplay.isSessionActive();
         options = resumeAvailable
-                ? new MenuAction[]{MenuAction.WORLD_MAP, MenuAction.RESUME, MenuAction.SAVE_SLOTS, MenuAction.EXIT}
-                : new MenuAction[]{MenuAction.WORLD_MAP, MenuAction.SAVE_SLOTS, MenuAction.EXIT};
+                ? new MenuAction[]{MenuAction.WORLD_MAP, MenuAction.SHOP, MenuAction.RESUME, MenuAction.SAVE_SLOTS, MenuAction.EXIT}
+                : new MenuAction[]{MenuAction.WORLD_MAP, MenuAction.SHOP, MenuAction.SAVE_SLOTS, MenuAction.EXIT};
         selectedIndex = 0;
     }
 
@@ -113,6 +114,9 @@ public class MainMenuScene extends Scene {
             case WORLD_MAP:
                 context.getScenes().switchTo(ArkanoidGame.SCENE_MAP);
                 break;
+            case SHOP:
+                context.getScenes().switchTo(ArkanoidGame.SCENE_SHOP);
+                break;
             case RESUME:
                 if (gameplay != null && gameplay.isSessionActive()) {
                     context.getScenes().switchTo(ArkanoidGame.SCENE_GAMEPLAY);
@@ -136,6 +140,8 @@ public class MainMenuScene extends Scene {
                 return localization.translate("menu.resume");
             case WORLD_MAP:
                 return localization.translate("menu.worldMap");
+            case SHOP:
+                return localization.translate("menu.shop");
             case SAVE_SLOTS:
                 return localization.translate("menu.saveSlots");
             case EXIT:

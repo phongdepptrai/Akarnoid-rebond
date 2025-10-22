@@ -23,6 +23,10 @@ public class PlayerProfile {
     private long lastLoginEpochSeconds;
     private int dailyStreak;
     private long lastDailyBonusEpochSeconds;
+    private List<String> ownedPaddleSkins;
+    private List<String> ownedBallSkins;
+    private String activePaddleSkin;
+    private String activeBallSkin;
 
     public PlayerProfile() {
         // Jackson / serialization constructor.
@@ -40,7 +44,11 @@ public class PlayerProfile {
                           int maxEnergy,
                           long lastLoginEpochSeconds,
                           int dailyStreak,
-                          long lastDailyBonusEpochSeconds) {
+                          long lastDailyBonusEpochSeconds,
+                          List<String> ownedPaddleSkins,
+                          List<String> ownedBallSkins,
+                          String activePaddleSkin,
+                          String activeBallSkin) {
         this.playerId = playerId;
         this.displayName = displayName;
         this.currentLevelId = currentLevelId;
@@ -54,6 +62,10 @@ public class PlayerProfile {
         this.lastLoginEpochSeconds = lastLoginEpochSeconds;
         this.dailyStreak = dailyStreak;
         this.lastDailyBonusEpochSeconds = lastDailyBonusEpochSeconds;
+        this.ownedPaddleSkins = ownedPaddleSkins;
+        this.ownedBallSkins = ownedBallSkins;
+        this.activePaddleSkin = activePaddleSkin;
+        this.activeBallSkin = activeBallSkin;
     }
 
     public static PlayerProfile newDefault() {
@@ -74,7 +86,11 @@ public class PlayerProfile {
                 30,
                 now,
                 0,
-                0
+                0,
+                new ArrayList<>(),
+                new ArrayList<>(),
+                "classic",
+                "classic"
         );
     }
 
@@ -96,6 +112,30 @@ public class PlayerProfile {
         }
         if (completedLevelIds == null) {
             completedLevelIds = new ArrayList<>();
+        }
+        if (ownedPaddleSkins == null) {
+            ownedPaddleSkins = new ArrayList<>();
+        }
+        if (ownedBallSkins == null) {
+            ownedBallSkins = new ArrayList<>();
+        }
+        if (!ownedPaddleSkins.contains("classic")) {
+            ownedPaddleSkins.add("classic");
+        }
+        if (!ownedBallSkins.contains("classic")) {
+            ownedBallSkins.add("classic");
+        }
+        if (activePaddleSkin == null || activePaddleSkin.isBlank()) {
+            activePaddleSkin = "classic";
+        }
+        if (!ownedPaddleSkins.contains(activePaddleSkin)) {
+            activePaddleSkin = "classic";
+        }
+        if (activeBallSkin == null || activeBallSkin.isBlank()) {
+            activeBallSkin = "classic";
+        }
+        if (!ownedBallSkins.contains(activeBallSkin)) {
+            activeBallSkin = "classic";
         }
         maxLives = Math.max(maxLives, 5);
         lives = Math.min(Math.max(lives, 0), maxLives);
@@ -243,5 +283,55 @@ public class PlayerProfile {
 
     public void setLastDailyBonusEpochSeconds(long lastDailyBonusEpochSeconds) {
         this.lastDailyBonusEpochSeconds = lastDailyBonusEpochSeconds;
+    }
+
+    public List<String> getOwnedPaddleSkins() {
+        if (ownedPaddleSkins == null) {
+            ownedPaddleSkins = new ArrayList<>();
+        }
+        return ownedPaddleSkins;
+    }
+
+    public List<String> getOwnedBallSkins() {
+        if (ownedBallSkins == null) {
+            ownedBallSkins = new ArrayList<>();
+        }
+        return ownedBallSkins;
+    }
+
+    public boolean hasPaddleSkin(String skinId) {
+        return getOwnedPaddleSkins().contains(skinId);
+    }
+
+    public boolean hasBallSkin(String skinId) {
+        return getOwnedBallSkins().contains(skinId);
+    }
+
+    public void addPaddleSkin(String skinId) {
+        if (!hasPaddleSkin(skinId)) {
+            getOwnedPaddleSkins().add(skinId);
+        }
+    }
+
+    public void addBallSkin(String skinId) {
+        if (!hasBallSkin(skinId)) {
+            getOwnedBallSkins().add(skinId);
+        }
+    }
+
+    public String getActivePaddleSkin() {
+        return activePaddleSkin;
+    }
+
+    public void setActivePaddleSkin(String activePaddleSkin) {
+        this.activePaddleSkin = activePaddleSkin;
+    }
+
+    public String getActiveBallSkin() {
+        return activeBallSkin;
+    }
+
+    public void setActiveBallSkin(String activeBallSkin) {
+        this.activeBallSkin = activeBallSkin;
     }
 }

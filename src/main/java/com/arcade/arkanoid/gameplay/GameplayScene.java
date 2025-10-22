@@ -9,6 +9,7 @@ import com.arcade.arkanoid.gameplay.entities.Ball;
 import com.arcade.arkanoid.gameplay.entities.Brick;
 import com.arcade.arkanoid.gameplay.entities.Paddle;
 import com.arcade.arkanoid.gameplay.entities.PowerUp;
+import com.arcade.arkanoid.gameplay.cosmetics.SkinCatalog;
 import com.arcade.arkanoid.gameplay.levels.LevelDefinition;
 import com.arcade.arkanoid.gameplay.levels.LevelManager;
 import com.arcade.arkanoid.gameplay.objectives.ObjectiveEngine;
@@ -121,15 +122,19 @@ public class GameplayScene extends Scene {
         activeLevel = levelManager.current();
         objectiveEngine.bind(activeLevel, objectiveListener);
         objectiveEngine.resetProgress();
+        PlayerProfile profile = context.getProfileManager().getActiveProfile();
+        SkinCatalog.PaddleSkin paddleSkin = SkinCatalog.paddleSkin(profile.getActivePaddleSkin());
+        SkinCatalog.BallSkin ballSkin = SkinCatalog.ballSkin(profile.getActiveBallSkin());
         paddle = new Paddle(
                 (context.getConfig().width() - BASE_PADDLE_WIDTH) / 2.0,
                 context.getConfig().height() - PADDLE_Y_OFFSET,
                 BASE_PADDLE_WIDTH,
                 PADDLE_HEIGHT,
                 PADDLE_SPEED,
-                new Color(0x00BCD4)
+                paddleSkin.fillColor(),
+                paddleSkin.borderColor()
         );
-        ball = new Ball(0, 0, BALL_SIZE, Color.WHITE);
+        ball = new Ball(0, 0, BALL_SIZE, ballSkin.fillColor(), ballSkin.borderColor());
         currentBallSpeed = BASE_BALL_SPEED;
         resetBall();
         buildBricks(activeLevel);

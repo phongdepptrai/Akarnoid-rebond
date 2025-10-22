@@ -12,6 +12,10 @@ public class SaveSlotSummary {
     private final long lastPlayedEpochSeconds;
     private final boolean occupied;
     private final PlayerProfile profile;
+    private final String activePaddleSkin;
+    private final String activeBallSkin;
+    private final int ownedPaddleSkins;
+    private final int ownedBallSkins;
 
     public SaveSlotSummary(int slotId, PlayerProfile profile, long lastPlayedEpochSeconds) {
         this.slotId = slotId;
@@ -24,6 +28,10 @@ public class SaveSlotSummary {
             this.dailyStreak = 0;
             this.lastPlayedEpochSeconds = 0;
             this.occupied = false;
+            this.activePaddleSkin = "classic";
+            this.activeBallSkin = "classic";
+            this.ownedPaddleSkins = 0;
+            this.ownedBallSkins = 0;
         } else {
             this.displayName = profile.getDisplayName();
             this.currentLevelId = profile.getCurrentLevelId();
@@ -32,6 +40,10 @@ public class SaveSlotSummary {
             this.dailyStreak = profile.getDailyStreak();
             this.lastPlayedEpochSeconds = lastPlayedEpochSeconds;
             this.occupied = true;
+            this.activePaddleSkin = profile.getActivePaddleSkin();
+            this.activeBallSkin = profile.getActiveBallSkin();
+            this.ownedPaddleSkins = profile.getOwnedPaddleSkins().size();
+            this.ownedBallSkins = profile.getOwnedBallSkins().size();
         }
     }
 
@@ -69,5 +81,21 @@ public class SaveSlotSummary {
 
     public PlayerProfile getProfile() {
         return profile;
+    }
+
+    public String getActivePaddleSkin() {
+        return activePaddleSkin;
+    }
+
+    public String getActiveBallSkin() {
+        return activeBallSkin;
+    }
+
+    public int getOwnedPaddleSkins() {
+        return ownedPaddleSkins;
+    }
+
+    public int getOwnedBallSkins() {
+        return ownedBallSkins;
     }
 }
