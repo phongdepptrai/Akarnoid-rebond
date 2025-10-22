@@ -132,8 +132,7 @@ public class GameplayScene extends Scene {
                 PADDLE_HEIGHT,
                 PADDLE_SPEED,
                 paddleSkin.fillColor(),
-                paddleSkin.borderColor()
-        );
+                paddleSkin.borderColor());
         ball = new Ball(0, 0, BALL_SIZE, ballSkin.fillColor(), ballSkin.borderColor());
         currentBallSpeed = BASE_BALL_SPEED;
         resetBall();
@@ -144,8 +143,7 @@ public class GameplayScene extends Scene {
         awaitingLaunch = true;
         ball.resetPosition(
                 paddle.getPosition().x + paddle.getWidth() / 2.0 - BALL_SIZE / 2.0,
-                paddle.getPosition().y - BALL_SIZE - 4
-        );
+                paddle.getPosition().y - BALL_SIZE - 4);
         currentBallSpeed = Math.max(260, currentBallSpeed);
         ball.setVelocity(0, 0);
     }
@@ -163,12 +161,24 @@ public class GameplayScene extends Scene {
         double brickWidth = (availableWidth - (cols - 1) * gap) / cols;
         double brickHeight = 24;
 
+        // Sử dụng Set để tránh duplicate
+        java.util.Set<String> addedPositions = new java.util.HashSet<>();
+
         definition.bricks().forEach(blueprint -> {
             int column = blueprint.column();
             int row = blueprint.row();
             if (column < 0 || column >= cols || row < 0 || row >= rows) {
                 return;
             }
+
+            // Kiểm tra duplicate
+            String position = column + "," + row;
+            if (addedPositions.contains(position)) {
+                System.err.println("Skipping duplicate brick at (" + column + "," + row + ")");
+                return;
+            }
+            addedPositions.add(position);
+
             double x = horizontalPadding + column * (brickWidth + gap);
             double y = verticalPadding + row * (brickHeight + gap);
             int hitPoints = Math.max(1, blueprint.hitPoints());
@@ -184,8 +194,7 @@ public class GameplayScene extends Scene {
                     row,
                     blueprint.brickType(),
                     blueprint.tags(),
-                    blueprint.modifiers()
-            );
+                    blueprint.modifiers());
             bricks.add(brick);
         });
     }
@@ -344,6 +353,7 @@ public class GameplayScene extends Scene {
                     ball.invertX();
                 }
                 brick.hit();
+
                 if (brick.isDestroyed()) {
                     score += brick.getScoreValue();
                     objectiveEngine.handleEvent(new ObjectiveEngine.ScoreAwardedEvent(brick.getScoreValue()));
@@ -351,8 +361,7 @@ public class GameplayScene extends Scene {
                             brick.getGridColumn(),
                             brick.getGridRow(),
                             brick.getBlueprintType(),
-                            brick.getTags()
-                    ));
+                            brick.getTags()));
                     maybeSpawnPowerUp(brick);
                 }
                 normalizeBallSpeed();
@@ -371,8 +380,7 @@ public class GameplayScene extends Scene {
                 brick.getPosition().y + brick.getHeight() / 2.0 - POWERUP_SIZE / 2.0,
                 POWERUP_SIZE,
                 type,
-                type == PowerUp.Type.EXPAND_PADDLE ? new Color(0x8BC34A) : new Color(0xFFEB3B)
-        );
+                type == PowerUp.Type.EXPAND_PADDLE ? new Color(0x8BC34A) : new Color(0xFFEB3B));
         powerUps.add(powerUp);
     }
 

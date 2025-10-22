@@ -19,16 +19,16 @@ public class Brick extends AbstractEntity {
     }
 
     public Brick(double x,
-                 double y,
-                 double width,
-                 double height,
-                 int hitPoints,
-                 int scoreValue,
-                 int gridColumn,
-                 int gridRow,
-                 String blueprintType,
-                 List<String> tags,
-                 List<String> modifiers) {
+            double y,
+            double width,
+            double height,
+            int hitPoints,
+            int scoreValue,
+            int gridColumn,
+            int gridRow,
+            String blueprintType,
+            List<String> tags,
+            List<String> modifiers) {
         super(x, y, width, height);
         this.hitPoints = Math.max(0, hitPoints);
         this.scoreValue = scoreValue;
@@ -52,6 +52,10 @@ public class Brick extends AbstractEntity {
 
     public boolean isDestroyed() {
         return hitPoints <= 0;
+    }
+
+    public int getHitPoints() {
+        return hitPoints;
     }
 
     public int getScoreValue() {
