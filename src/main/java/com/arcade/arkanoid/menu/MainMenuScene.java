@@ -74,8 +74,8 @@ public class MainMenuScene extends Scene {
         GameplayScene gameplay = (GameplayScene) context.getScenes().getPersistentScene(ArkanoidGame.SCENE_GAMEPLAY);
         boolean resumeAvailable = gameplay != null && gameplay.isSessionActive();
         options = resumeAvailable
-                ? new MenuAction[]{MenuAction.WORLD_MAP, MenuAction.RESUME, MenuAction.SAVE_SLOTS, MenuAction.EXIT}
-                : new MenuAction[]{MenuAction.WORLD_MAP, MenuAction.SAVE_SLOTS, MenuAction.EXIT};
+                ? new MenuAction[] { MenuAction.WORLD_MAP, MenuAction.RESUME, MenuAction.SAVE_SLOTS, MenuAction.EXIT }
+                : new MenuAction[] { MenuAction.WORLD_MAP, MenuAction.SAVE_SLOTS, MenuAction.EXIT };
         selectedIndex = 0;
     }
 
@@ -95,7 +95,8 @@ public class MainMenuScene extends Scene {
                 }
             }
             if (move != 0) {
-                selectedIndex = Math.max(0, Math.min(selectedIndex + move, options.length - 1));
+                // Wrap-around navigation
+                selectedIndex = (selectedIndex + move + options.length) % options.length;
             }
             if (move == 0 && (input.isKeyJustPressed(KeyEvent.VK_ENTER) || input.isKeyJustPressed(KeyEvent.VK_SPACE))) {
                 handleSelection();
@@ -150,11 +151,13 @@ public class MainMenuScene extends Scene {
         graphics.setFont(hintFont);
         graphics.setColor(new Color(210, 210, 210));
         int y = 40;
-        graphics.drawString(localization.translate("menu.status.lives", profile.getLives(), profile.getMaxLives()), 40, y);
+        graphics.drawString(localization.translate("menu.status.lives", profile.getLives(), profile.getMaxLives()), 40,
+                y);
         y += 24;
         graphics.drawString(localization.translate("menu.status.coins", profile.getCoins()), 40, y);
         y += 24;
-        graphics.drawString(localization.translate("menu.status.energy", profile.getEnergy(), profile.getMaxEnergy()), 40, y);
+        graphics.drawString(localization.translate("menu.status.energy", profile.getEnergy(), profile.getMaxEnergy()),
+                40, y);
         y += 24;
         graphics.drawString(localization.translate("menu.status.streak", profile.getDailyStreak()), 40, y);
         y += 30;
@@ -203,55 +206,52 @@ public class MainMenuScene extends Scene {
 
     private void draw3DSpaceText(Graphics2D g, String text, Font font, int x, int y) {
         g.setFont(font);
-        
+
         TextLayout textLayout = new TextLayout(text, font, g.getFontRenderContext());
-        
+
         for (int depth = 8; depth > 0; depth--) {
             Shape shadowOutline = textLayout.getOutline(AffineTransform.getTranslateInstance(x + depth * 2, y + depth));
-            g.setColor(new Color(0, 0, 0, 30)); 
+            g.setColor(new Color(0, 0, 0, 30));
             g.fill(shadowOutline);
         }
-        
+
         Shape mainOutline = textLayout.getOutline(AffineTransform.getTranslateInstance(x, y));
         for (int glow = 12; glow > 0; glow--) {
-            g.setColor(new Color(0, 150, 255, 8)); 
+            g.setColor(new Color(0, 150, 255, 8));
             g.setStroke(new BasicStroke(glow * 2f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
             g.draw(mainOutline);
         }
-        
+
         LinearGradientPaint spaceGradient = new LinearGradientPaint(
-            x, y - 80, x, y + 40,
-            new float[]{0f, 0.3f, 0.6f, 1f},
-            new Color[]{
-                new Color(0x00FFFF), 
-                new Color(0x0099FF), 
-                new Color(0x6633FF), 
-                new Color(0x9900CC)  
-            }
-        );
-        
+                x, y - 80, x, y + 40,
+                new float[] { 0f, 0.3f, 0.6f, 1f },
+                new Color[] {
+                        new Color(0x00FFFF),
+                        new Color(0x0099FF),
+                        new Color(0x6633FF),
+                        new Color(0x9900CC)
+                });
+
         g.setPaint(spaceGradient);
         g.fill(mainOutline);
-        
+
         g.setStroke(new BasicStroke(2f));
         g.setColor(new Color(255, 255, 255, 200));
         g.draw(mainOutline);
-        
-        LinearGradientPaint highlight = new LinearGradientPaint(
-            x, y - 60, x, y - 40,
-            new float[]{0f, 1f},
-            new Color[]{new Color(255, 255, 255, 100), new Color(255, 255, 255, 0)}
-        );
-    
-    }
 
+        LinearGradientPaint highlight = new LinearGradientPaint(
+                x, y - 60, x, y - 40,
+                new float[] { 0f, 1f },
+                new Color[] { new Color(255, 255, 255, 100), new Color(255, 255, 255, 0) });
+
+    }
 
     @Override
     public void render(Graphics2D graphics) {
         drawBackground(graphics);
         int width = context.getConfig().width();
         drawPlayerStats(graphics);
-        
+
         String title = "ARKANOID";
         int titleWidth = graphics.getFontMetrics(titleFont).stringWidth(title);
         int titleX = (width - titleWidth) / 2;
@@ -269,7 +269,7 @@ public class MainMenuScene extends Scene {
             String option = labelFor(options[i]);
             int optionWidth = graphics.getFontMetrics().stringWidth(option);
             int x = (width - optionWidth) / 2;
-            int y = 400 + i * 70;  
+            int y = 400 + i * 70;
             if (i == selectedIndex) {
                 graphics.setColor(new Color(0xFFEB3B));
                 graphics.drawString(">", x - 40, y);
@@ -299,22 +299,20 @@ public class MainMenuScene extends Scene {
                 int drawX = (width - drawW) / 2;
                 int drawY = (height - drawH) / 2;
                 graphics.drawImage(backgroundNoPlanets, drawX, drawY, drawW, drawH, null);
-                
+
                 // Draw planets with pulsing opacity
                 if (backgroundImage != null) {
                     // Create pulsing effect (slow fade in/out cycle)
-                    float planetOpacity = (float)(0.3 + 0.7 * Math.abs(Math.sin(animationTime * 0.7)));
-                    
+                    float planetOpacity = (float) (0.3 + 0.7 * Math.abs(Math.sin(animationTime * 0.7)));
+
                     java.awt.AlphaComposite alphaComposite = java.awt.AlphaComposite.getInstance(
-                        java.awt.AlphaComposite.SRC_OVER, planetOpacity
-                    );
+                            java.awt.AlphaComposite.SRC_OVER, planetOpacity);
                     graphics.setComposite(alphaComposite);
                     graphics.drawImage(backgroundImage, drawX, drawY, drawW, drawH, null);
-                    
+
                     // Reset composite
                     graphics.setComposite(java.awt.AlphaComposite.getInstance(
-                        java.awt.AlphaComposite.SRC_OVER, 1.0f
-                    ));
+                            java.awt.AlphaComposite.SRC_OVER, 1.0f));
                 }
                 return;
             }
@@ -335,9 +333,8 @@ public class MainMenuScene extends Scene {
 
         // Fallback gradient if no images available
         GradientPaint spaceGradient = new GradientPaint(
-            0, 0, new Color(20, 0, 40), 
-            0, height, new Color(0, 0, 10)
-        );
+                0, 0, new Color(20, 0, 40),
+                0, height, new Color(0, 0, 10));
         graphics.setPaint(spaceGradient);
         graphics.fillRect(0, 0, width, height);
     }

@@ -46,6 +46,7 @@ public class GameLoop implements Runnable {
         final double targetFrameTime = 1_000_000_000.0 / config.targetFps();
         long previousTime = System.nanoTime();
         double accumulator = 0;
+        final int MAX_UPDATES_PER_FRAME = 5; // Prevent spiral of death
 
         while (running) {
             long currentTime = System.nanoTime();
@@ -53,19 +54,28 @@ public class GameLoop implements Runnable {
             previousTime = currentTime;
             accumulator += elapsed;
 
+            // Prepare frame ONCE at the start - copy pending to frame
             context.getInput().prepareFrame();
 
-            while (accumulator >= targetFrameTime) {
+            // Process accumulated time with fixed time steps
+            int updateCount = 0;
+            while (accumulator >= targetFrameTime && updateCount < MAX_UPDATES_PER_FRAME) {
                 double deltaSeconds = targetFrameTime / 1_000_000_000.0;
                 scenes.update(deltaSeconds);
-                context.getInput().clearFrameJustPressed();
                 accumulator -= targetFrameTime;
+                updateCount++;
+            }
+
+            // If we hit max updates, reset accumulator to prevent spiral of death
+            if (updateCount >= MAX_UPDATES_PER_FRAME) {
+                accumulator = 0;
             }
 
             render();
 
+            // Yield to prevent CPU spinning
             try {
-                Thread.sleep(1);
+                Thread.sleep(0, 100000); // Sleep 0.1ms instead of 1ms for better timing
             } catch (InterruptedException ignored) {
                 Thread.currentThread().interrupt();
             }
