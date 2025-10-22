@@ -45,7 +45,7 @@ public class GameplayScene extends Scene {
     private final List<Brick> bricks = new ArrayList<>();
     private final List<PowerUp> powerUps = new ArrayList<>();
     private final ObjectiveEngine objectiveEngine = new StandardObjectiveEngine();
-    private final ObjectiveEngine.Listener objectiveListener = new SceneObjectiveListener();
+    private final ObjectiveEngine.Listener objectiveListener = new SceneObjectiveListener();    
 
     private Paddle paddle;
     private Ball ball;
