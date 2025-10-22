@@ -65,7 +65,7 @@ public class GameLoop implements Runnable {
             render();
 
             try {
-                Thread.sleep(2);
+                Thread.sleep(1);
             } catch (InterruptedException ignored) {
                 Thread.currentThread().interrupt();
             }
