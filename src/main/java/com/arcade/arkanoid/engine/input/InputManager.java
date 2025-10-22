@@ -10,7 +10,7 @@ public class InputManager implements KeyListener {
     private final int[] pendingJustPressedCount = new int[KEY_RANGE]; // Count presses
     private final boolean[] frameJustPressed = new boolean[KEY_RANGE];
     private final long[] pressedTime = new long[KEY_RANGE]; // Track when key was pressed
-    private static final long REPEAT_DELAY = 120_000_000L; // 120ms delay before repeat
+    private static final long REPEAT_DELAY = 500_000_000L; // 120ms delay before repeat
     private static final long REPEAT_INTERVAL = 40_000_000L; // 40ms between repeats (~25 repeats/sec)
 
     public synchronized boolean isKeyPressed(int keyCode) {
