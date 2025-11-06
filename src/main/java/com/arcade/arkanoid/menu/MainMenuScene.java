@@ -43,13 +43,22 @@ public class MainMenuScene extends Scene {
     private final Font subtitleFont = new Font("iomanoid", Font.PLAIN, 80);
     private final Font optionFont = new Font("emulogic", Font.PLAIN, 26);
     private final Font hintFont = new Font("Orbitron", Font.PLAIN, 16);
+    private final Font iconLabelFont = new Font("emulogic", Font.PLAIN, 13);
+
+    // Icon layout constants
+    private static final int ICON_SIZE = 80;
+    private static final int ICON_MARGIN = 40;
+    private static final int ICON_LABEL_OFFSET = 25;
+
     private final LocalizationService localization;
     private final EconomyService economy;
     private MenuAction[] options = new MenuAction[0];
     private int selectedIndex = 0;
     private BufferedImage backgroundImage;
     private BufferedImage backgroundNoPlanets;
+    private BufferedImage profileIcon;
     private BufferedImage profilePicture;
+    private BufferedImage tutorialIcon;
     private double animationTime = 0;
 
     /**
@@ -70,11 +79,14 @@ public class MainMenuScene extends Scene {
 
         assets.loadImage("background", "/graphics/background.jpg");
         assets.loadImage("background1", "/graphics/background1.jpg");
+        assets.loadImage("profile_icon", "/graphics/profile_icon.PNG");
         assets.loadImage("profile_pic", "/graphics/profile_pic.PNG");
+        assets.loadImage("tutorial_icon", "/graphics/tutorial_icon.PNG");
         backgroundImage = assets.getImage("background");
         backgroundNoPlanets = assets.getImage("background1");
+        profileIcon = assets.getImage("profile_icon");
         profilePicture = assets.getImage("profile_pic");
-
+        tutorialIcon = assets.getImage("tutorial_icon");
         economy.claimDailyBonus();
 
         GameplayScene gameplay = (GameplayScene) context.getScenes().getPersistentScene(ArkanoidGame.SCENE_GAMEPLAY);
@@ -93,6 +105,12 @@ public class MainMenuScene extends Scene {
 
         if (input.isKeyJustPressed(KeyEvent.VK_P)) {
             context.getScenes().switchTo(ArkanoidGame.SCENE_PROFILE);
+            return;
+        }
+
+        if (input.isKeyJustPressed(KeyEvent.VK_T)) {
+            // TODO: Add tutorial scene
+            // context.getScenes().switchTo(ArkanoidGame.SCENE_TUTORIAL);
             return;
         }
 
@@ -166,24 +184,50 @@ public class MainMenuScene extends Scene {
     }
 
     /**
+     * Draws an icon with label at specified position.
+     * 
+     * @param g     graphics context
+     * @param icon  the icon image to draw
+     * @param label the text label below icon
+     * @param x     x position of icon (left edge)
+     */
+    private void drawIconWithLabel(Graphics2D g, BufferedImage icon, String label, int x) {
+        if (icon != null) {
+            int imgW = icon.getWidth();
+            int imgH = icon.getHeight();
+            double scale = Math.min(ICON_SIZE / (double) imgW, ICON_SIZE / (double) imgH);
+            int drawW = (int) (imgW * scale);
+            int drawH = (int) (imgH * scale);
+            int drawX = x + (ICON_SIZE - drawW) / 2;
+            int drawY = ICON_MARGIN + (ICON_SIZE - drawH) / 2;
+            g.drawImage(icon, drawX, drawY, drawW, drawH, null);
+        }
+
+        g.setFont(iconLabelFont);
+        g.setColor(Color.WHITE);
+        int textX = x + (ICON_SIZE - g.getFontMetrics().stringWidth(label)) / 2;
+        int textY = ICON_MARGIN + ICON_SIZE + ICON_LABEL_OFFSET;
+        g.drawString(label, textX, textY);
+    }
+
+    /**
      * Draws player profile picture and name in top-left corner.
      * 
      * @param g graphics context
      */
     private void drawPlayerStats(Graphics2D g) {
         PlayerProfile profile = context.getProfileManager().getActiveProfile();
-        int picX = 40, picY = 40, picSize = 80;
+        drawIconWithLabel(g, profileIcon, profile.getDisplayName(), ICON_MARGIN);
+    }
 
-        if (profilePicture != null) {
-            g.setColor(new Color(220, 220, 220));
-            g.fillOval(picX - 5, picY - 5, picSize + 10, picSize + 10);
-            g.drawImage(profilePicture, picX, picY, picSize, picSize, null);
-        }
-
-        g.setFont(new Font("emulogic", Font.PLAIN, 10));
-        g.setColor(Color.WHITE);
-        String name = profile.getDisplayName();
-        g.drawString(name, picX + (picSize - g.getFontMetrics().stringWidth(name)) / 2, picY + picSize + 25);
+    /**
+     * Draws tutorial icon and label in top-right corner.
+     * 
+     * @param g graphics context
+     */
+    private void drawTutorialIcon(Graphics2D g) {
+        int width = context.getConfig().width();
+        drawIconWithLabel(g, tutorialIcon, "TUTORIAL", width - ICON_SIZE - ICON_MARGIN);
     }
 
     /**
@@ -237,6 +281,7 @@ public class MainMenuScene extends Scene {
         drawBackground(graphics);
         int width = context.getConfig().width();
         drawPlayerStats(graphics);
+        drawTutorialIcon(graphics);
 
         String title = "ARKANOID";
         int titleWidth = graphics.getFontMetrics(titleFont).stringWidth(title);
@@ -269,6 +314,7 @@ public class MainMenuScene extends Scene {
         graphics.drawString(localization.translate("menu.hint.navigate"), 40, context.getConfig().height() - 90);
         graphics.drawString(localization.translate("menu.hint.pause"), 40, context.getConfig().height() - 60);
         graphics.drawString(localization.translate("menu.hint.profile"), 40, context.getConfig().height() - 30);
+        graphics.drawString(localization.translate("menu.hint.tutorial"), 40, context.getConfig().height() - 120);
     }
 
     /**

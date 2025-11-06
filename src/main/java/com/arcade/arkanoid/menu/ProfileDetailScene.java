@@ -18,7 +18,7 @@ import java.time.ZoneOffset;
  * Features a sci-fi themed UI with animated background and cyan borders.
  */
 public class ProfileDetailScene extends Scene {
-    private static final Font TITLE_FONT = new Font("emulogic", Font.BOLD, 36);
+    private static final Font TITLE_FONT = new Font("emulogic", Font.BOLD, 30);
     private static final Font LABEL_FONT = new Font("emulogic", Font.PLAIN, 20);
     private static final Font VALUE_FONT = new Font("emulogic", Font.PLAIN, 16);
     private static final Font HINT_FONT = new Font("emulogic", Font.PLAIN, 16);
@@ -74,7 +74,7 @@ public class ProfileDetailScene extends Scene {
         int panelW = 600, panelH = 700;
         int panelX = (width - panelW) / 2, panelY = (height - panelH) / 2;
 
-        drawCyanPanel(g, panelX, panelY, panelW, panelH);
+        drawPanel(g, panelX, panelY, panelW, panelH);
 
         PlayerProfile profile = context.getProfileManager().getActiveProfile();
 
@@ -98,11 +98,11 @@ public class ProfileDetailScene extends Scene {
         drawStat(g, "COINS", String.valueOf(profile.getCoins()), leftX, statsY + rowH);
         drawStat(g, "ENERGY", profile.getEnergy() + " / " + profile.getMaxEnergy(), leftX, statsY + rowH * 2);
         drawStat(g, "STREAK", profile.getDailyStreak() + " DAYS", rightX, statsY);
-        drawStat(g, "COMPLETED", profile.getCompletedLevelIds().size() + " LEVELS", rightX, statsY + rowH);
-        drawStat(g, "UNLOCKED", profile.getUnlockedLevelIds().size() + " LEVELS", rightX, statsY + rowH * 2);
+        drawStat(g, "UNLOCKED", profile.getUnlockedLevelIds().size() + " LEVELS", rightX, statsY + rowH);
+        drawStat(g, "COMPLETED", profile.getCompletedLevelIds().size() + " LEVELS", rightX, statsY + rowH * 2);
 
         // Daily bonus and hint
-        drawCenteredText(g, getDailyBonusStatus(profile), LABEL_FONT, new Color(200, 200, 255),
+        drawCenteredText(g, getDailyBonusStatus(profile), HINT_FONT, new Color(200, 200, 255),
                 panelX + panelW / 2, statsY + rowH * 3 + 20);
         drawCenteredText(g, "Press ESC or ENTER to close", HINT_FONT, new Color(150, 150, 150),
                 panelX + panelW / 2, panelY + panelH - 30);
@@ -198,18 +198,10 @@ public class ProfileDetailScene extends Scene {
     /**
      * Draws cyan bordered panel with glow effect (no background fill).
      */
-    private void drawCyanPanel(Graphics2D g, int x, int y, int w, int h) {
+    private void drawPanel(Graphics2D g, int x, int y, int w, int h) {
         // Only draw bright cyan border with glow - no background fill
-        g.setColor(new Color(0, 255, 255, 230));
+        g.setColor(new Color(0, 150, 255, 100));
         g.setStroke(new BasicStroke(3f));
         g.drawRoundRect(x, y, w, h, 30, 30);
-
-        // Outer glow layers
-        for (int i = 1; i <= 4; i++) {
-            int alpha = 60 - i * 12;
-            g.setColor(new Color(0, 255, 255, alpha));
-            g.setStroke(new BasicStroke(3f + i * 1.5f));
-            g.drawRoundRect(x - i, y - i, w + i * 2, h + i * 2, 30 + i * 2, 30 + i * 2);
-        }
     }
 }
