@@ -7,7 +7,6 @@ import com.arcade.arkanoid.engine.scene.Scene;
 import com.arcade.arkanoid.engine.util.FontLoader;
 import com.arcade.arkanoid.engine.assets.AssetManager;
 import com.arcade.arkanoid.gameplay.GameplayScene;
-import com.arcade.arkanoid.economy.DailyBonusResult;
 import com.arcade.arkanoid.economy.EconomyService;
 import com.arcade.arkanoid.localization.LocalizationService;
 import com.arcade.arkanoid.profile.PlayerProfile;
@@ -23,14 +22,15 @@ import java.awt.event.KeyEvent;
 import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
-import java.io.InputStream;
-import java.time.Duration;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.ZoneOffset;
-import javax.imageio.ImageIO;
 
+/**
+ * Main menu scene featuring animated 3D title text and navigation options.
+ * Displays game title, menu options, player profile, and background animations.
+ */
 public class MainMenuScene extends Scene {
+    /**
+     * Enumeration of available menu actions.
+     */
     private enum MenuAction {
         WORLD_MAP,
         RESUME,
@@ -48,10 +48,14 @@ public class MainMenuScene extends Scene {
     private int selectedIndex = 0;
     private BufferedImage backgroundImage;
     private BufferedImage backgroundNoPlanets;
-    private DailyBonusResult dailyBonusResult;
-    private String dailyBonusMessage = "";
+    private BufferedImage profilePicture;
     private double animationTime = 0;
 
+    /**
+     * Constructs a new MainMenuScene.
+     * 
+     * @param context the game context
+     */
     public MainMenuScene(GameContext context) {
         super(context);
         this.localization = context.getLocalizationService();
@@ -65,11 +69,12 @@ public class MainMenuScene extends Scene {
 
         assets.loadImage("background", "/graphics/background.jpg");
         assets.loadImage("background1", "/graphics/background1.jpg");
+        assets.loadImage("profile_pic", "/graphics/profile_pic.PNG");
         backgroundImage = assets.getImage("background");
         backgroundNoPlanets = assets.getImage("background1");
+        profilePicture = assets.getImage("profile_pic");
 
-        dailyBonusResult = economy.claimDailyBonus();
-        dailyBonusMessage = formatDailyBonusMessage(dailyBonusResult);
+        economy.claimDailyBonus();
 
         GameplayScene gameplay = (GameplayScene) context.getScenes().getPersistentScene(ArkanoidGame.SCENE_GAMEPLAY);
         boolean resumeAvailable = gameplay != null && gameplay.isSessionActive();
@@ -84,26 +89,28 @@ public class MainMenuScene extends Scene {
         animationTime += deltaTime;
         InputManager input = context.getInput();
 
-        if (options.length > 0) {
-            int move = 0;
-            if (input.isKeyJustPressed(KeyEvent.VK_UP) || input.isKeyJustPressed(KeyEvent.VK_W)) {
-                move = -1;
-            }
-            if (input.isKeyJustPressed(KeyEvent.VK_DOWN) || input.isKeyJustPressed(KeyEvent.VK_S)) {
-                if (move == 0) {
-                    move = 1;
-                }
-            }
-            if (move != 0) {
-                // Wrap-around navigation
-                selectedIndex = (selectedIndex + move + options.length) % options.length;
-            }
-            if (move == 0 && (input.isKeyJustPressed(KeyEvent.VK_ENTER) || input.isKeyJustPressed(KeyEvent.VK_SPACE))) {
-                handleSelection();
-            }
+        if (input.isKeyJustPressed(KeyEvent.VK_P)) {
+            context.getScenes().switchTo(ArkanoidGame.SCENE_PROFILE);
+            return;
+        }
+
+        if (options.length == 0)
+            return;
+
+        int move = input.isKeyJustPressed(KeyEvent.VK_UP) || input.isKeyJustPressed(KeyEvent.VK_W) ? -1
+                : input.isKeyJustPressed(KeyEvent.VK_DOWN) || input.isKeyJustPressed(KeyEvent.VK_S) ? 1 : 0;
+
+        if (move != 0) {
+            selectedIndex = (selectedIndex + move + options.length) % options.length;
+        } else if (input.isKeyJustPressed(KeyEvent.VK_ENTER) || input.isKeyJustPressed(KeyEvent.VK_SPACE)) {
+            handleSelection();
         }
     }
 
+    /**
+     * Handles user selection of menu option.
+     * Switches to appropriate scene or exits game based on selected action.
+     */
     private void handleSelection() {
         if (options.length == 0) {
             return;
@@ -123,7 +130,6 @@ public class MainMenuScene extends Scene {
                 context.getScenes().switchTo(ArkanoidGame.SCENE_SAVE);
                 break;
             case EXIT:
-                context.getGame().stop();
                 System.exit(0);
                 break;
             default:
@@ -131,6 +137,12 @@ public class MainMenuScene extends Scene {
         }
     }
 
+    /**
+     * Returns localized label for menu action.
+     * 
+     * @param action the menu action
+     * @return localized label string
+     */
     private String labelFor(MenuAction action) {
         switch (action) {
             case RESUME:
@@ -146,64 +158,37 @@ public class MainMenuScene extends Scene {
         }
     }
 
-    private void drawPlayerStats(Graphics2D graphics) {
+    /**
+     * Draws player profile picture and name in top-left corner.
+     * 
+     * @param g graphics context
+     */
+    private void drawPlayerStats(Graphics2D g) {
         PlayerProfile profile = context.getProfileManager().getActiveProfile();
-        graphics.setFont(hintFont);
-        graphics.setColor(new Color(210, 210, 210));
-        int y = 40;
-        graphics.drawString(localization.translate("menu.status.lives", profile.getLives(), profile.getMaxLives()), 40,
-                y);
-        y += 24;
-        graphics.drawString(localization.translate("menu.status.coins", profile.getCoins()), 40, y);
-        y += 24;
-        graphics.drawString(localization.translate("menu.status.energy", profile.getEnergy(), profile.getMaxEnergy()),
-                40, y);
-        y += 24;
-        graphics.drawString(localization.translate("menu.status.streak", profile.getDailyStreak()), 40, y);
-        y += 30;
-        if (dailyBonusMessage != null && !dailyBonusMessage.isBlank()) {
-            graphics.drawString(dailyBonusMessage, 40, y);
-            y += 22;
+        int picX = 40, picY = 40, picSize = 80;
+
+        if (profilePicture != null) {
+            g.setColor(new Color(220, 220, 220));
+            g.fillOval(picX - 5, picY - 5, picSize + 10, picSize + 10);
+            g.drawImage(profilePicture, picX, picY, picSize, picSize, null);
         }
-        String nextBonus = formatNextBonusCountdown(profile);
-        if (!nextBonus.isBlank()) {
-            graphics.drawString(nextBonus, 40, y);
-        }
+
+        g.setFont(new Font("emulogic", Font.PLAIN, 10));
+        g.setColor(Color.WHITE);
+        String name = profile.getDisplayName();
+        g.drawString(name, picX + (picSize - g.getFontMetrics().stringWidth(name)) / 2, picY + picSize + 25);
     }
 
-    private String formatDailyBonusMessage(DailyBonusResult result) {
-        if (result == null) {
-            return "";
-        }
-        if (result.isGranted()) {
-            return localization.translate("menu.dailyBonus.claimed",
-                    result.getCoinsAwarded(),
-                    result.getLivesAwarded(),
-                    result.getStreak());
-        }
-        return localization.translate("menu.dailyBonus.already", result.getStreak());
-    }
-
-    private String formatNextBonusCountdown(PlayerProfile profile) {
-        long lastClaim = profile.getLastDailyBonusEpochSeconds();
-        if (lastClaim <= 0) {
-            return "";
-        }
-        Instant now = Instant.now();
-        LocalDate lastClaimDate = Instant.ofEpochSecond(lastClaim).atZone(ZoneOffset.UTC).toLocalDate();
-        LocalDate nextClaimDate = lastClaimDate.plusDays(1);
-        Instant nextClaimInstant = nextClaimDate.atStartOfDay().toInstant(ZoneOffset.UTC);
-        if (!now.isBefore(nextClaimInstant)) {
-            return localization.translate("menu.dailyBonus.ready");
-        }
-        long seconds = Math.max(0, Duration.between(now, nextClaimInstant).getSeconds());
-        long hours = seconds / 3600;
-        long minutes = (seconds % 3600) / 60;
-        long secs = seconds % 60;
-        String formatted = String.format("%02d:%02d:%02d", hours, minutes, secs);
-        return localization.translate("menu.dailyBonus.next", formatted);
-    }
-
+    /**
+     * Renders text with 3D space effect including shadows, glow, and gradient.
+     * Creates futuristic sci-fi styled text with depth and neon effects.
+     * 
+     * @param g    graphics context
+     * @param text text to render
+     * @param font font to use
+     * @param x    x position
+     * @param y    y position
+     */
     private void draw3DSpaceText(Graphics2D g, String text, Font font, int x, int y) {
         g.setFont(font);
 
@@ -238,12 +223,6 @@ public class MainMenuScene extends Scene {
         g.setStroke(new BasicStroke(2f));
         g.setColor(new Color(255, 255, 255, 200));
         g.draw(mainOutline);
-
-        LinearGradientPaint highlight = new LinearGradientPaint(
-                x, y - 60, x, y - 40,
-                new float[] { 0f, 1f },
-                new Color[] { new Color(255, 255, 255, 100), new Color(255, 255, 255, 0) });
-
     }
 
     @Override
@@ -280,62 +259,38 @@ public class MainMenuScene extends Scene {
 
         graphics.setFont(hintFont);
         graphics.setColor(new Color(190, 190, 190));
-        graphics.drawString(localization.translate("menu.hint.navigate"), 40, context.getConfig().height() - 60);
-        graphics.drawString(localization.translate("menu.hint.pause"), 40, context.getConfig().height() - 30);
+        graphics.drawString(localization.translate("menu.hint.navigate"), 40, context.getConfig().height() - 90);
+        graphics.drawString(localization.translate("menu.hint.pause"), 40, context.getConfig().height() - 60);
+        graphics.drawString(localization.translate("menu.hint.profile"), 40, context.getConfig().height() - 30);
     }
 
-    private void drawBackground(Graphics2D graphics) {
-        int width = context.getConfig().width();
-        int height = context.getConfig().height();
+    /**
+     * Draws animated space background with pulsing planet overlay.
+     * Uses two background images - base layer and animated planets layer.
+     * 
+     * @param g graphics context
+     */
+    private void drawBackground(Graphics2D g) {
+        int w = context.getConfig().width(), h = context.getConfig().height();
+        BufferedImage bg = backgroundNoPlanets != null ? backgroundNoPlanets : backgroundImage;
 
-        if (backgroundNoPlanets != null) {
-            // Always draw base background without planets
-            int imgW = backgroundNoPlanets.getWidth();
-            int imgH = backgroundNoPlanets.getHeight();
-            if (imgW > 0 && imgH > 0) {
-                double scale = Math.max(width / (double) imgW, height / (double) imgH);
-                int drawW = (int) Math.ceil(imgW * scale);
-                int drawH = (int) Math.ceil(imgH * scale);
-                int drawX = (width - drawW) / 2;
-                int drawY = (height - drawH) / 2;
-                graphics.drawImage(backgroundNoPlanets, drawX, drawY, drawW, drawH, null);
+        if (bg != null && bg.getWidth() > 0 && bg.getHeight() > 0) {
+            double scale = Math.max(w / (double) bg.getWidth(), h / (double) bg.getHeight());
+            int drawW = (int) Math.ceil(bg.getWidth() * scale);
+            int drawH = (int) Math.ceil(bg.getHeight() * scale);
+            int drawX = (w - drawW) / 2, drawY = (h - drawH) / 2;
 
-                // Draw planets with pulsing opacity
-                if (backgroundImage != null) {
-                    // Create pulsing effect (slow fade in/out cycle)
-                    float planetOpacity = (float) (0.3 + 0.7 * Math.abs(Math.sin(animationTime * 0.7)));
+            g.drawImage(bg, drawX, drawY, drawW, drawH, null);
 
-                    java.awt.AlphaComposite alphaComposite = java.awt.AlphaComposite.getInstance(
-                            java.awt.AlphaComposite.SRC_OVER, planetOpacity);
-                    graphics.setComposite(alphaComposite);
-                    graphics.drawImage(backgroundImage, drawX, drawY, drawW, drawH, null);
-
-                    // Reset composite
-                    graphics.setComposite(java.awt.AlphaComposite.getInstance(
-                            java.awt.AlphaComposite.SRC_OVER, 1.0f));
-                }
-                return;
+            if (backgroundNoPlanets != null && backgroundImage != null) {
+                float opacity = (float) (0.3 + 0.7 * Math.abs(Math.sin(animationTime * 0.7)));
+                g.setComposite(java.awt.AlphaComposite.getInstance(java.awt.AlphaComposite.SRC_OVER, opacity));
+                g.drawImage(backgroundImage, drawX, drawY, drawW, drawH, null);
+                g.setComposite(java.awt.AlphaComposite.getInstance(java.awt.AlphaComposite.SRC_OVER, 1.0f));
             }
-        } else if (backgroundImage != null) {
-            // Fallback to single background if background1 not available
-            int imgW = backgroundImage.getWidth();
-            int imgH = backgroundImage.getHeight();
-            if (imgW > 0 && imgH > 0) {
-                double scale = Math.max(width / (double) imgW, height / (double) imgH);
-                int drawW = (int) Math.ceil(imgW * scale);
-                int drawH = (int) Math.ceil(imgH * scale);
-                int drawX = (width - drawW) / 2;
-                int drawY = (height - drawH) / 2;
-                graphics.drawImage(backgroundImage, drawX, drawY, drawW, drawH, null);
-                return;
-            }
+        } else {
+            g.setPaint(new GradientPaint(0, 0, new Color(20, 0, 40), 0, h, new Color(0, 0, 10)));
+            g.fillRect(0, 0, w, h);
         }
-
-        // Fallback gradient if no images available
-        GradientPaint spaceGradient = new GradientPaint(
-                0, 0, new Color(20, 0, 40),
-                0, height, new Color(0, 0, 10));
-        graphics.setPaint(spaceGradient);
-        graphics.fillRect(0, 0, width, height);
     }
 }
