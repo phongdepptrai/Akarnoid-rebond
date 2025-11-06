@@ -14,7 +14,7 @@ import java.awt.event.KeyEvent;
 public class PauseScene extends Scene {
     private final Font titleFont = new Font("SansSerif", Font.BOLD, 42);
     private final Font optionFont = new Font("SansSerif", Font.BOLD, 24);
-    private final String[] options = {"Resume", "Restart Level", "Main Menu"};
+    private final String[] options = { "Resume", "Restart Level", "Main Menu" };
     private int selected = 0;
     private GameplayScene gameplayScene;
 
@@ -80,7 +80,12 @@ public class PauseScene extends Scene {
         int width = context.getConfig().width();
         int height = context.getConfig().height();
 
-        graphics.setColor(new Color(0, 0, 0, 200));
+        if (gameplayScene != null) {
+            gameplayScene.render(graphics);
+        }
+
+        // Semi-transparent overlay
+        graphics.setColor(new Color(0, 0, 0, 150));
         graphics.fillRect(0, 0, width, height);
 
         graphics.setColor(Color.WHITE);
