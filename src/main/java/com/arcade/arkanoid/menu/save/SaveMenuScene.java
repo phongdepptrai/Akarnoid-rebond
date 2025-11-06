@@ -117,7 +117,7 @@ public class SaveMenuScene extends Scene {
         graphics.drawString(title, (width - titleWidth) / 2, 120);
 
         int slotAreaTop = 180;
-        int slotHeight = 110;
+        int slotHeight = 130;
         for (int i = 0; i < slots.size(); i++) {
             int y = slotAreaTop + i * slotHeight;
             drawSlot(graphics, slots.get(i), y, i == selectedIndex);
@@ -138,7 +138,7 @@ public class SaveMenuScene extends Scene {
     private void drawSlot(Graphics2D graphics, SaveSlotSummary summary, int y, boolean selected) {
         int width = context.getConfig().width() - 80;
         int x = 40;
-        int height = 90;
+        int height = 110;
         graphics.setColor(selected ? new Color(66, 165, 245, 160) : new Color(30, 30, 40, 180));
         graphics.fillRoundRect(x, y, width, height, 20, 20);
         graphics.setColor(selected ? new Color(187, 222, 251) : new Color(84, 110, 122));
@@ -152,6 +152,7 @@ public class SaveMenuScene extends Scene {
         graphics.drawString(slotLabel, x + 20, y + 32);
 
         graphics.setFont(detailFont);
+        int lineY = y + 56;
         if (summary.isOccupied() && summary.getProfile() != null) {
             PlayerProfile profile = summary.getProfile();
             String summaryLine = localization.translate(
@@ -162,18 +163,30 @@ public class SaveMenuScene extends Scene {
                     profile.getDailyStreak()
             );
             graphics.setColor(new Color(220, 220, 220));
-            graphics.drawString(summaryLine, x + 20, y + 56);
+            graphics.drawString(summaryLine, x + 20, lineY);
+
+            String paddleName = localization.translate("shop.item.paddle." + summary.getActivePaddleSkin());
+            String ballName = localization.translate("shop.item.ball." + summary.getActiveBallSkin());
+            String skinLine = localization.translate(
+                    "saveMenu.summarySkins",
+                    paddleName,
+                    summary.getOwnedPaddleSkins(),
+                    ballName,
+                    summary.getOwnedBallSkins()
+            );
+            graphics.setColor(new Color(200, 210, 220));
+            graphics.drawString(skinLine, x + 20, lineY + 20);
 
             String lastPlayed = summary.getLastPlayedEpochSeconds() > 0
                     ? DATE_FORMAT.format(Instant.ofEpochSecond(summary.getLastPlayedEpochSeconds()))
                     : localization.translate("saveMenu.neverPlayed");
             graphics.setColor(new Color(180, 200, 200));
-            graphics.drawString(localization.translate("saveMenu.lastPlayed", lastPlayed), x + 20, y + 78);
+            graphics.drawString(localization.translate("saveMenu.lastPlayed", lastPlayed), x + 20, lineY + 40);
         } else {
             graphics.setColor(new Color(200, 200, 200));
-            graphics.drawString(localization.translate("saveMenu.empty"), x + 20, y + 56);
+            graphics.drawString(localization.translate("saveMenu.empty"), x + 20, lineY);
             graphics.setColor(new Color(160, 180, 200));
-            graphics.drawString(localization.translate("saveMenu.emptyHint"), x + 20, y + 78);
+            graphics.drawString(localization.translate("saveMenu.emptyHint"), x + 20, lineY + 20);
         }
     }
 

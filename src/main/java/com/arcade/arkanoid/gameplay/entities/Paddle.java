@@ -6,12 +6,24 @@ import java.awt.Graphics2D;
 public class Paddle extends AbstractEntity {
     private final double baseWidth;
     private final double speed;
-    private final Color color;
+    private final Color fillColor;
+    private final Color borderColor;
 
-    public Paddle(double x, double y, double width, double height, double speed, Color color) {
+    public Paddle(double x, double y, double width, double height, double speed, Color fillColor) {
+        this(x, y, width, height, speed, fillColor, fillColor.darker());
+    }
+
+    public Paddle(double x,
+                  double y,
+                  double width,
+                  double height,
+                  double speed,
+                  Color fillColor,
+                  Color borderColor) {
         super(x, y, width, height);
         this.speed = speed;
-        this.color = color;
+        this.fillColor = fillColor;
+        this.borderColor = borderColor;
         this.baseWidth = width;
     }
 
@@ -51,7 +63,10 @@ public class Paddle extends AbstractEntity {
 
     @Override
     public void render(Graphics2D graphics) {
-        graphics.setColor(color);
-        graphics.fillRoundRect((int) position.x, (int) position.y, (int) width, (int) height, 8, 8);
+        graphics.setColor(fillColor);
+        graphics.fillRoundRect((int) position.x, (int) position.y, (int) width, (int) height, 12, 12);
+        graphics.setColor(borderColor);
+        graphics.setStroke(new java.awt.BasicStroke(3));
+        graphics.drawRoundRect((int) position.x, (int) position.y, (int) width, (int) height, 12, 12);
     }
 }
