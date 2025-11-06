@@ -5,8 +5,6 @@ import com.arcade.arkanoid.engine.assets.AssetManager;
 import com.arcade.arkanoid.engine.core.GameContext;
 import com.arcade.arkanoid.engine.input.InputManager;
 import com.arcade.arkanoid.engine.scene.Scene;
-import com.arcade.arkanoid.engine.util.NeonGlowEffect;
-import com.arcade.arkanoid.engine.util.VisualEffect;
 import com.arcade.arkanoid.gameplay.entities.Ball;
 import com.arcade.arkanoid.gameplay.entities.Brick;
 import com.arcade.arkanoid.gameplay.entities.Paddle;
@@ -17,6 +15,7 @@ import com.arcade.arkanoid.gameplay.levels.LevelManager;
 import com.arcade.arkanoid.gameplay.objectives.ObjectiveEngine;
 import com.arcade.arkanoid.gameplay.objectives.StandardObjectiveEngine;
 import com.arcade.arkanoid.gameplay.system.GameplayPanelRenderer;
+import com.arcade.arkanoid.gameplay.system.GameplayVisualEffects;
 import com.arcade.arkanoid.gameplay.system.HudRenderer;
 import com.arcade.arkanoid.localization.LocalizationService;
 import com.arcade.arkanoid.menu.PauseScene;
@@ -49,10 +48,9 @@ public class GameplayScene extends Scene {
     private final LevelManager levelManager = new LevelManager();
     private final HudRenderer hudRenderer;
     private final GameplayPanelRenderer panelRenderer = GameplayPanelRenderer.getInstance();
+    private final GameplayVisualEffects visualEffects = GameplayVisualEffects.getInstance();
     private final Random random = new Random();
-    
-    // Visual effects
-    private final VisualEffect neonDotEffect;
+
     private final List<Brick> bricks = new ArrayList<>();
     private final List<PowerUp> powerUps = new ArrayList<>();
     private final ObjectiveEngine objectiveEngine = new StandardObjectiveEngine();
@@ -78,16 +76,6 @@ public class GameplayScene extends Scene {
         super(context);
         this.localization = context.getLocalizationService();
         this.hudRenderer = new HudRenderer(localization);
-        
-        // Initialize neon glow effect for border dots
-        this.neonDotEffect = new NeonGlowEffect.Builder()
-                .size(2)
-                .coreColor(new Color(0, 255, 255))
-                .glowColor(new Color(0, 200, 255))
-                .glowLayers(3)
-                .intensity(1.0f)
-                .pulsing(false)
-                .build();
     }
 
     @Override
@@ -361,26 +349,31 @@ public class GameplayScene extends Scene {
      * @return true if ball hit any boundary, false otherwise
      */
     private boolean handleBoundaryCollisions() {
-        double width = context.getConfig().width();
-        double height = context.getConfig().height();
+        int width = context.getConfig().width();
+        int height = context.getConfig().height();
         boolean hitBoundary = false;
 
+        // Game area boundaries from visual effects class
+        double leftBoundary = visualEffects.getLeftBound();
+        double rightBoundary = visualEffects.getRightBound(width);
+        double topBoundary = visualEffects.getTopBound();
+
         // Left boundary
-        if (ball.getPosition().x <= SIDE_PANEL_WIDTH) {
-            ball.getPosition().x = SIDE_PANEL_WIDTH;
+        if (ball.getPosition().x <= leftBoundary) {
+            ball.getPosition().x = leftBoundary;
             ball.invertX();
             hitBoundary = true;
         }
         // Right boundary
-        else if (ball.getPosition().x + ball.getWidth() >= width - SIDE_PANEL_WIDTH) {
-            ball.getPosition().x = width - SIDE_PANEL_WIDTH - ball.getWidth();
+        else if (ball.getPosition().x + ball.getWidth() >= rightBoundary) {
+            ball.getPosition().x = rightBoundary - ball.getWidth();
             ball.invertX();
             hitBoundary = true;
         }
 
         // Top boundary
-        if (ball.getPosition().y <= 50) {
-            ball.getPosition().y = 50;
+        if (ball.getPosition().y <= topBoundary) {
+            ball.getPosition().y = topBoundary;
             ball.invertY();
             hitBoundary = true;
         }
@@ -582,42 +575,14 @@ public class GameplayScene extends Scene {
 
     @Override
     public void render(Graphics2D graphics) {
-        drawBackground(graphics);
-        drawGameAreaBorder(graphics);
-        renderGameElements(graphics);
-        renderStatusMessage(graphics);
-    }
-
-    /**
-     * Factory method to draw neon border around game play area only.
-     */
-    private void drawGameAreaBorder(Graphics2D graphics) {
         int width = context.getConfig().width();
         int height = context.getConfig().height();
 
-        // Game area boundaries (between side panels)
-        int leftBound = SIDE_PANEL_WIDTH;
-        int rightBound = width - SIDE_PANEL_WIDTH;
-        int topBound = 50;
-
-        int spacing = 8;
-
-        graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-        // Top border
-        for (int x = leftBound; x <= rightBound; x += spacing) {
-            neonDotEffect.render(graphics, x, topBound);
-        }
-
-        // Left border (only in game area)
-        for (int y = topBound; y <= height - 60; y += spacing) {
-            neonDotEffect.render(graphics, leftBound, y);
-        }
-
-        // Right border (only in game area)
-        for (int y = topBound; y <= height - 60; y += spacing) {
-            drawNeonDot(graphics, rightBound, y, dotSize, neonCyan, neonGlow);
-        }
+        drawBackground(graphics);
+        visualEffects.drawTitle(graphics, width);
+        visualEffects.drawGameAreaBorder(graphics, width, height);
+        renderGameElements(graphics);
+        renderStatusMessage(graphics);
     }
 
     /**
@@ -658,34 +623,6 @@ public class GameplayScene extends Scene {
             graphics.setColor(new Color(18, 18, 30));
             graphics.fillRect(0, 0, context.getConfig().width(), context.getConfig().height());
         }
-    }
-
-    /**
-     * Factory method to draw a single neon dot with multi-layer glow effect.
-     */
-    private void drawNeonDot(Graphics2D g, int x, int y, int size, Color core, Color glow) {
-        // Enable anti-aliasing for smooth circles
-        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        
-        // Outer glow layer (largest, most transparent)
-        g.setColor(new Color(0, 200, 255, 60));
-        g.fillOval(x - size * 3, y - size * 3, size * 6, size * 6);
-        
-        // Middle glow layer
-        g.setColor(new Color(0, 220, 255, 100));
-        g.fillOval(x - size * 2, y - size * 2, size * 4, size * 4);
-        
-        // Inner glow layer
-        g.setColor(glow);
-        g.fillOval(x - size, y - size, size * 2, size * 2);
-
-        // Core dot (bright, solid)
-        g.setColor(core);
-        g.fillOval(x - size / 2, y - size / 2, size, size);
-        
-        // Extra bright center point
-        g.setColor(Color.WHITE);
-        g.fillOval(x - 1, y - 1, 2, 2);
     }
 
     private static class SceneObjectiveListener implements ObjectiveEngine.Listener {

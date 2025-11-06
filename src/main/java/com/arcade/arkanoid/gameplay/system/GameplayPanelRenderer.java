@@ -16,7 +16,7 @@ import java.util.List;
  */
 public class GameplayPanelRenderer {
     private static final int PANEL_WIDTH = 240;
-    private static final Color PANEL_BG = new Color(10, 10, 20, 150);
+    private static final Color PANEL_BG = new Color(10, 10, 20, 50);
     private static final Color PANEL_BORDER = new Color(255, 140, 0);
     private static final Color PANEL_INNER_BORDER = new Color(180, 100, 0);
 
