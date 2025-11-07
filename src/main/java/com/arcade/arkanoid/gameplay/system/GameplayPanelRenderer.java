@@ -1,5 +1,6 @@
 package com.arcade.arkanoid.gameplay.system;
 
+import com.arcade.arkanoid.engine.util.GradientUtils;
 import com.arcade.arkanoid.gameplay.levels.LevelDefinition;
 import com.arcade.arkanoid.gameplay.objectives.ObjectiveEngine;
 
@@ -7,6 +8,8 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.image.BufferedImage;
 import java.util.List;
 
 /**
@@ -16,10 +19,6 @@ import java.util.List;
  */
 public class GameplayPanelRenderer {
     private static final int PANEL_WIDTH = 240;
-    private static final Color PANEL_BG = new Color(10, 10, 20, 50);
-    private static final Color PANEL_BORDER = new Color(255, 140, 0);
-    private static final Color PANEL_INNER_BORDER = new Color(180, 100, 0);
-
     private static final Font TITLE_FONT = new Font("emulogic", Font.PLAIN, 14);
     private static final Font VALUE_FONT = new Font("emulogic", Font.PLAIN, 20);
     private static final Font SMALL_VALUE_FONT = new Font("emulogic", Font.PLAIN, 16);
@@ -27,6 +26,10 @@ public class GameplayPanelRenderer {
 
     // Singleton instance
     private static GameplayPanelRenderer instance;
+
+    // Cached panel background/border for performance
+    private BufferedImage cachedPanelBackground;
+    private int cachedHeight = -1;
 
     private GameplayPanelRenderer() {
         // Private constructor for singleton
@@ -49,40 +52,94 @@ public class GameplayPanelRenderer {
     public void render(Graphics2D g, int screenWidth, int screenHeight,
             int score, int lives, LevelDefinition level,
             List<ObjectiveEngine.ObjectiveState> objectives) {
-        drawPanel(g, 0, 0, PANEL_WIDTH, screenHeight, true, score, lives);
-        drawPanel(g, screenWidth - PANEL_WIDTH, 0, PANEL_WIDTH, screenHeight, false, level, objectives);
+        // Create cache if needed
+        if (cachedPanelBackground == null || cachedHeight != screenHeight) {
+            createCachedPanelBackground(screenHeight);
+            cachedHeight = screenHeight;
+        }
+
+        // Draw cached backgrounds
+        g.drawImage(cachedPanelBackground, 0, 0, null);
+        g.drawImage(cachedPanelBackground, screenWidth - PANEL_WIDTH, 0, null);
+
+        // Draw dynamic content on top
+        drawPanelContent(g, 0, PANEL_WIDTH, screenHeight, true, score, lives, null, null);
+        drawPanelContent(g, screenWidth - PANEL_WIDTH, PANEL_WIDTH, screenHeight, false, 0, 0, level, objectives);
     }
 
-    private void drawPanel(Graphics2D g, int x, int y, int w, int h, boolean isLeft, Object... data) {
-        // Background
-        g.setColor(PANEL_BG);
+    /**
+     * Creates cached panel background with all static visual effects.
+     */
+    private void createCachedPanelBackground(int h) {
+        cachedPanelBackground = new BufferedImage(PANEL_WIDTH, h, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g = cachedPanelBackground.createGraphics();
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+        int x = 0, y = 0, w = PANEL_WIDTH;
+
+        // Background with gradient
+        g.setPaint(GradientUtils.createVerticalGradient(x, y, h,
+                new float[] { 0f, 0.5f, 1f },
+                new Color[] {
+                        new Color(0, 20, 40, 100),
+                        new Color(0, 30, 60, 90),
+                        new Color(0, 20, 40, 100)
+                }));
         g.fillRect(x, y, w, h);
 
-        // Borders
-        g.setColor(PANEL_BORDER);
+        // 3D shadow and glow effects
+        GradientUtils.drawShadowLayers(g, x, y, w, h, 3);
+        GradientUtils.drawGlowLayers(g, x, y, w, h, 4);
+
+        // Main border with full gradient
+        g.setPaint(GradientUtils.createFullGradient(x, y, h));
         g.setStroke(new BasicStroke(3));
         g.drawRect(x + 2, y + 2, w - 4, h - 4);
 
-        g.setColor(PANEL_INNER_BORDER);
+        // Inner border with short gradient
+        g.setPaint(GradientUtils.createShortGradient(x, y, h));
         g.setStroke(new BasicStroke(2));
         g.drawRect(x + 8, y + 8, w - 16, h - 16);
 
         drawCorners(g, x, y, w, h);
+        g.dispose();
+    }
 
+    /**
+     * Draws dynamic panel content (score, lives, objectives) on top of cached
+     * background.
+     */
+    private void drawPanelContent(Graphics2D g, int x, int w, int h, boolean isLeft,
+            int score, int lives, LevelDefinition level, List<ObjectiveEngine.ObjectiveState> objectives) {
         if (isLeft) {
-            drawLeftContent(g, x, w, (int) data[0], (int) data[1]);
+            drawLeftContent(g, x, w, score, lives);
         } else {
-            drawRightContent(g, x, w, (LevelDefinition) data[0],
-                    (List<ObjectiveEngine.ObjectiveState>) data[1]);
+            drawRightContent(g, x, w, level, objectives);
         }
     }
 
     private void drawCorners(Graphics2D g, int x, int y, int w, int h) {
         int size = 20;
-        g.setColor(PANEL_BORDER);
-        g.setStroke(new BasicStroke(2));
 
-        // Factory method for corner lines
+        // Glow effect for corners
+        for (int glow = 2; glow > 0; glow--) {
+            g.setColor(new Color(GradientUtils.GLOW_COLOR.getRed(),
+                    GradientUtils.GLOW_COLOR.getGreen(),
+                    GradientUtils.GLOW_COLOR.getBlue(), 30));
+            g.setStroke(new BasicStroke(3 + glow * 2f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+            drawAllCornerLines(g, x, y, w, h, size);
+        }
+
+        // Main corner lines with short gradient
+        g.setPaint(GradientUtils.createShortGradient(x, y, h));
+        g.setStroke(new BasicStroke(3, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+        drawAllCornerLines(g, x, y, w, h, size);
+    }
+
+    /**
+     * Helper method to draw all four corner lines.
+     */
+    private void drawAllCornerLines(Graphics2D g, int x, int y, int w, int h, int size) {
         drawCornerLine(g, x, y, size, true, true); // Top-left
         drawCornerLine(g, x + w, y, size, false, true); // Top-right
         drawCornerLine(g, x, y + h, size, true, false); // Bottom-left
@@ -119,7 +176,8 @@ public class GameplayPanelRenderer {
      * Factory method for creating a titled section with optional value.
      */
     private void drawSection(Graphics2D g, int centerX, int y, String title, String value, Font valueFont) {
-        drawCenteredText(g, title, TITLE_FONT, PANEL_BORDER, centerX, y);
+        // Title with cyan color
+        drawCenteredText(g, title, TITLE_FONT, GradientUtils.CYAN, centerX, y);
         if (value != null && valueFont != null) {
             int valueY = valueFont == VALUE_FONT ? y + 40 : y + 35;
             drawCenteredText(g, value, valueFont, Color.WHITE, centerX, valueY);

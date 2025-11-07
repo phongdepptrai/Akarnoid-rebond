@@ -5,22 +5,19 @@ import com.arcade.arkanoid.engine.core.GameContext;
 import com.arcade.arkanoid.engine.input.InputManager;
 import com.arcade.arkanoid.engine.scene.Scene;
 import com.arcade.arkanoid.engine.util.FontLoader;
+import com.arcade.arkanoid.engine.util.GradientUtils;
 import com.arcade.arkanoid.engine.assets.AssetManager;
 import com.arcade.arkanoid.gameplay.GameplayScene;
 import com.arcade.arkanoid.economy.EconomyService;
 import com.arcade.arkanoid.localization.LocalizationService;
 import com.arcade.arkanoid.profile.PlayerProfile;
 
-import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.GradientPaint;
 import java.awt.Graphics2D;
-import java.awt.LinearGradientPaint;
-import java.awt.Shape;
+import java.awt.RenderingHints;
 import java.awt.event.KeyEvent;
-import java.awt.font.TextLayout;
-import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 
 /**
@@ -61,6 +58,10 @@ public class MainMenuScene extends Scene {
     private BufferedImage tutorialIcon;
     private double animationTime = 0;
 
+    // Cached title rendering for performance
+    private BufferedImage cachedTitle;
+    private BufferedImage cachedSubtitle;
+
     /**
      * Constructs a new MainMenuScene.
      * 
@@ -88,6 +89,9 @@ public class MainMenuScene extends Scene {
         profilePicture = assets.getImage("profile_pic");
         tutorialIcon = assets.getImage("tutorial_icon");
         economy.claimDailyBonus();
+
+        // Cache title and subtitle rendering once for performance
+        createCachedTitles();
 
         GameplayScene gameplay = (GameplayScene) context.getScenes().getPersistentScene(ArkanoidGame.SCENE_GAMEPLAY);
         boolean resumeAvailable = gameplay != null && gameplay.isSessionActive();
@@ -231,49 +235,35 @@ public class MainMenuScene extends Scene {
     }
 
     /**
-     * Renders text with 3D space effect including shadows, glow, and gradient.
-     * Creates futuristic sci-fi styled text with depth and neon effects.
-     * 
-     * @param g    graphics context
-     * @param text text to render
-     * @param font font to use
-     * @param x    x position
-     * @param y    y position
+     * Creates cached BufferedImages for title and subtitle to improve performance.
+     * These are rendered once at high quality and reused every frame.
      */
-    private void draw3DSpaceText(Graphics2D g, String text, Font font, int x, int y) {
-        g.setFont(font);
+    private void createCachedTitles() {
+        // Cache title
+        String title = "ARKANOID";
+        int titleWidth = (int) titleFont.createGlyphVector(
+                new java.awt.font.FontRenderContext(null, true, true), title).getVisualBounds().getWidth();
+        int titleHeight = 200;
 
-        TextLayout textLayout = new TextLayout(text, font, g.getFontRenderContext());
+        cachedTitle = new BufferedImage(titleWidth + 100, titleHeight, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g = cachedTitle.createGraphics();
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+        GradientUtils.draw3DSpaceTextFullQuality(g, title, titleFont, 50, 150);
+        g.dispose();
 
-        for (int depth = 8; depth > 0; depth--) {
-            Shape shadowOutline = textLayout.getOutline(AffineTransform.getTranslateInstance(x + depth * 2, y + depth));
-            g.setColor(new Color(0, 0, 0, 30));
-            g.fill(shadowOutline);
-        }
+        // Cache subtitle
+        String subtitle = "REBORN";
+        int subtitleWidth = (int) subtitleFont.createGlyphVector(
+                new java.awt.font.FontRenderContext(null, true, true), subtitle).getVisualBounds().getWidth();
+        int subtitleHeight = 150;
 
-        Shape mainOutline = textLayout.getOutline(AffineTransform.getTranslateInstance(x, y));
-        for (int glow = 12; glow > 0; glow--) {
-            g.setColor(new Color(0, 150, 255, 8));
-            g.setStroke(new BasicStroke(glow * 2f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-            g.draw(mainOutline);
-        }
-
-        LinearGradientPaint spaceGradient = new LinearGradientPaint(
-                x, y - 80, x, y + 40,
-                new float[] { 0f, 0.3f, 0.6f, 1f },
-                new Color[] {
-                        new Color(0x00FFFF),
-                        new Color(0x0099FF),
-                        new Color(0x6633FF),
-                        new Color(0x9900CC)
-                });
-
-        g.setPaint(spaceGradient);
-        g.fill(mainOutline);
-
-        g.setStroke(new BasicStroke(2f));
-        g.setColor(new Color(255, 255, 255, 200));
-        g.draw(mainOutline);
+        cachedSubtitle = new BufferedImage(subtitleWidth + 100, subtitleHeight, BufferedImage.TYPE_INT_ARGB);
+        g = cachedSubtitle.createGraphics();
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+        GradientUtils.draw3DSpaceTextFullQuality(g, subtitle, subtitleFont, 50, 100);
+        g.dispose();
     }
 
     @Override
@@ -283,18 +273,25 @@ public class MainMenuScene extends Scene {
         drawPlayerStats(graphics);
         drawTutorialIcon(graphics);
 
-        String title = "ARKANOID";
-        int titleWidth = graphics.getFontMetrics(titleFont).stringWidth(title);
-        int titleX = (width - titleWidth) / 2;
-        int titleY = 200;
-        draw3DSpaceText(graphics, title, titleFont, titleX, titleY);
+        // Draw cached title
+        if (cachedTitle != null) {
+            String title = "ARKANOID";
+            int titleWidth = graphics.getFontMetrics(titleFont).stringWidth(title);
+            int titleX = (width - titleWidth) / 2 - 50;
+            int titleY = 50;
+            graphics.drawImage(cachedTitle, titleX, titleY, null);
+        }
 
-        String subtitle = "REBORN";
-        graphics.setFont(subtitleFont);
-        int subtitleWidth = graphics.getFontMetrics().stringWidth(subtitle);
-        int subtitleX = (width - subtitleWidth) / 2;
-        int subtitleY = titleY + 80;
-        draw3DSpaceText(graphics, subtitle, subtitleFont, subtitleX, subtitleY);
+        // Draw cached subtitle
+        if (cachedSubtitle != null) {
+            String subtitle = "REBORN";
+            graphics.setFont(subtitleFont);
+            int subtitleWidth = graphics.getFontMetrics().stringWidth(subtitle);
+            int subtitleX = (width - subtitleWidth) / 2 - 50;
+            int subtitleY = 200;
+            graphics.drawImage(cachedSubtitle, subtitleX, subtitleY, null);
+        }
+
         graphics.setFont(optionFont);
         for (int i = 0; i < options.length; i++) {
             String option = labelFor(options[i]);

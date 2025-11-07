@@ -579,7 +579,6 @@ public class GameplayScene extends Scene {
         int height = context.getConfig().height();
 
         drawBackground(graphics);
-        visualEffects.drawTitle(graphics, width);
         visualEffects.drawGameAreaBorder(graphics, width, height);
         renderGameElements(graphics);
         renderStatusMessage(graphics);
