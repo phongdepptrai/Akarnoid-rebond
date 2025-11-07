@@ -202,10 +202,12 @@ public class GameplayScene extends Scene {
         if (cols <= 0 || rows <= 0)
             return;
 
-        double horizontalPadding = SIDE_PANEL_WIDTH + 30;
-        double verticalPadding = 90;
+        double leftBoundary = SIDE_PANEL_WIDTH + 15;
+        double rightBoundary = context.getConfig().width() - SIDE_PANEL_WIDTH - 15;
+        double horizontalPadding = leftBoundary + 15; // Start bricks 15px inside left border
+        double verticalPadding = 115; // Moved down 25px total (was 90, now 115)
         double gap = 4;
-        double availableWidth = context.getConfig().width() - horizontalPadding * 2;
+        double availableWidth = (rightBoundary - 15) - horizontalPadding;
         double brickWidth = (availableWidth - (cols - 1) * gap) / cols;
         double brickHeight = 24;
 
