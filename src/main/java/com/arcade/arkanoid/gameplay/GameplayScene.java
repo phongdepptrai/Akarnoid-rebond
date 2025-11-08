@@ -223,22 +223,39 @@ public class GameplayScene extends Scene {
     }
 
     /**
-     * Factory method to validate brick position and prevent duplicates.
+     * Validates brick position within grid boundaries and prevents duplicates.
+     * 
+     * @param blueprint      The brick blueprint containing position data
+     * @param cols           Maximum number of columns in the grid
+     * @param rows           Maximum number of rows in the grid
+     * @param addedPositions Set tracking already-placed brick positions
+     * @return true if position is valid and not duplicate, false otherwise
      */
     private boolean isValidBrickPosition(LevelDefinition.BrickBlueprint blueprint,
             int cols, int rows, java.util.Set<String> addedPositions) {
+        if (blueprint == null) {
+            return false;
+        }
+
         int column = blueprint.column();
         int row = blueprint.row();
 
-        if (column < 0 || column >= cols || row < 0 || row >= rows)
-            return false;
-
-        String position = column + "," + row;
-        if (addedPositions.contains(position)) {
-            System.err.println("Skipping duplicate brick at (" + column + "," + row + ")");
+        // Check if position is within grid bounds
+        if (column < 0 || column >= cols || row < 0 || row >= rows) {
+            System.err.println("Invalid brick position: (" + column + "," + row + ") outside grid bounds [0-"
+                    + (cols - 1) + ", 0-" + (rows - 1) + "]");
             return false;
         }
-        addedPositions.add(position);
+
+        // Check for duplicate position
+        String positionKey = column + "," + row;
+        if (addedPositions.contains(positionKey)) {
+            System.err.println("Duplicate brick detected at position (" + column + "," + row + ")");
+            return false;
+        }
+
+        // Mark position as occupied
+        addedPositions.add(positionKey);
         return true;
     }
 
@@ -288,7 +305,12 @@ public class GameplayScene extends Scene {
     private void updateGameplay(InputManager input, double deltaTime) {
         handleMovementInput(input);
         paddle.update(deltaTime);
-        paddle.clamp(SIDE_PANEL_WIDTH, context.getConfig().width() - SIDE_PANEL_WIDTH);
+
+        // Clamp paddle within the neon dot border boundaries
+        int width = context.getConfig().width();
+        double leftBoundary = visualEffects.getLeftBound();
+        double rightBoundary = visualEffects.getRightBound(width);
+        paddle.clamp(leftBoundary, rightBoundary);
 
         if (awaitingLaunch) {
             attachBallToPaddle();

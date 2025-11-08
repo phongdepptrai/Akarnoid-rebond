@@ -7,25 +7,15 @@ import java.awt.image.BufferedImage;
 public class Paddle extends AbstractEntity {
     private final double baseWidth;
     private final double speed;
-    private final Color fillColor;
-    private final Color borderColor;
     private BufferedImage paddleImage;
 
     public Paddle(double x, double y, double width, double height, double speed, Color fillColor) {
         this(x, y, width, height, speed, fillColor, fillColor.darker());
     }
 
-    public Paddle(double x,
-            double y,
-            double width,
-            double height,
-            double speed,
-            Color fillColor,
-            Color borderColor) {
+    public Paddle(double x, double y, double width, double height, double speed, Color fillColor, Color borderColor) {
         super(x, y, width, height);
         this.speed = speed;
-        this.fillColor = fillColor;
-        this.borderColor = borderColor;
         this.baseWidth = width;
     }
 
@@ -53,18 +43,8 @@ public class Paddle extends AbstractEntity {
         this.paddleImage = image;
     }
 
-    @Override
-    public void update(double deltaTime) {
-        super.update(deltaTime);
-    }
-
     public void clamp(double minX, double maxX) {
-        if (position.x < minX) {
-            position.x = minX;
-        }
-        if (position.x + width > maxX) {
-            position.x = maxX - width;
-        }
+        position.x = Math.max(minX, Math.min(position.x, maxX - width));
     }
 
     @Override
