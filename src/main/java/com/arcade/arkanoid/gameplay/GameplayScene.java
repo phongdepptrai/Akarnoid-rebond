@@ -41,6 +41,9 @@ public class GameplayScene extends Scene {
     private static final double PADDLE_Y_OFFSET = 60;
     private static final double POWERUP_SIZE = 18;
     private static final double POWERUP_DROP_CHANCE = 0.15;
+    private static final int MAX_LIVES = 9;
+    private static final int MAX_SIMULTANEOUS_BALLS = 5;
+    private static final double FIRE_BALL_DURATION_SECONDS = 8.0;
 
     private final LevelManager levelManager = new LevelManager();
     private final HudRenderer hudRenderer;
@@ -555,7 +558,7 @@ public class GameplayScene extends Scene {
                 paddleGunSystem.activate();
                 break;
             case EXTRA_LIFE:
-                lives = Math.min(lives + 1, 9);
+                lives = Math.min(lives + 1, MAX_LIVES);
                 break;
             default:
                 break;
@@ -573,7 +576,7 @@ public class GameplayScene extends Scene {
         if (balls.isEmpty()) {
             return;
         }
-        if (balls.size() >= 5) {
+        if (balls.size() >= MAX_SIMULTANEOUS_BALLS) {
             return;
         }
         Ball reference = primaryBall();
@@ -594,7 +597,7 @@ public class GameplayScene extends Scene {
 
     private void igniteFireBalls() {
         for (Ball ballRef : balls) {
-            ballRef.setFire(8.0);
+            ballRef.setFire(FIRE_BALL_DURATION_SECONDS);
         }
     }
 

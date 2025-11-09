@@ -109,6 +109,13 @@ public class Ball extends AbstractEntity {
     }
 
     private static Color blend(Color a, Color b, double ratio) {
+        if (a == null && b == null) {
+            return Color.BLACK;
+        } else if (a == null) {
+            return b;
+        } else if (b == null) {
+            return a;
+        }
         double r = Math.max(0, Math.min(1, ratio));
         int red = (int) (a.getRed() * (1 - r) + b.getRed() * r);
         int green = (int) (a.getGreen() * (1 - r) + b.getGreen() * r);

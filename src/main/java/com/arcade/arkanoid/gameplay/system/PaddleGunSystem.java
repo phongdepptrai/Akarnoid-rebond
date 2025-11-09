@@ -21,6 +21,8 @@ public final class PaddleGunSystem {
     private static final double LEFT_OFFSET = 10.0;
     private static final double RIGHT_OFFSET = 16.0;
     private static final double ORIGIN_Y_OFFSET = 10.0;
+    private static final double BULLET_TOP_BOUNDARY = 50.0;
+    private static final double TOP_BOUNDARY = 40.0;
 
     private final List<Bullet> bullets = new ArrayList<>();
     private double timer;
@@ -80,7 +82,7 @@ public final class PaddleGunSystem {
         while (iterator.hasNext()) {
             Bullet bullet = iterator.next();
             bullet.update(deltaTime);
-            if (bullet.getPosition().y + bullet.getHeight() < 40) {
+            if (bullet.getPosition().y + bullet.getHeight() < TOP_BOUNDARY) {
                 iterator.remove();
                 continue;
             }
@@ -102,9 +104,9 @@ public final class PaddleGunSystem {
                     }
                 }
             }
-
-            if (!hit && bullet.getPosition().y < 50) {
+            if (!hit && bullet.getPosition().y < TOP_BOUNDARY) {
                 iterator.remove();
+            }
             }
         }
     }
