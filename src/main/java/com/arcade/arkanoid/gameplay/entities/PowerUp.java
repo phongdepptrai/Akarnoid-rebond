@@ -6,7 +6,11 @@ import java.awt.Graphics2D;
 public class PowerUp extends AbstractEntity {
     public enum Type {
         EXPAND_PADDLE,
-        SLOW_BALL
+        SLOW_BALL,
+        MULTI_BALL,
+        EXTRA_LIFE,
+        FIRE_BALL,
+        PADDLE_GUN
     }
 
     private final Type type;
@@ -37,6 +41,14 @@ public class PowerUp extends AbstractEntity {
                 return "E";
             case SLOW_BALL:
                 return "S";
+            case MULTI_BALL:
+                return "M";
+            case EXTRA_LIFE:
+                return "L";
+            case FIRE_BALL:
+                return "F";
+            case PADDLE_GUN:
+                return "G";
             default:
                 return "?";
         }
