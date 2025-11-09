@@ -82,6 +82,7 @@ public final class PaddleGunSystem {
         while (iterator.hasNext()) {
             Bullet bullet = iterator.next();
             bullet.update(deltaTime);
+
             if (bullet.getPosition().y + bullet.getHeight() < TOP_BOUNDARY) {
                 iterator.remove();
                 continue;
@@ -104,9 +105,9 @@ public final class PaddleGunSystem {
                     }
                 }
             }
+
             if (!hit && bullet.getPosition().y < TOP_BOUNDARY) {
                 iterator.remove();
-            }
             }
         }
     }

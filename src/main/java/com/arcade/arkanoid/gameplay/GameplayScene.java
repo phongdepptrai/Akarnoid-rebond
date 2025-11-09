@@ -23,6 +23,7 @@ import com.arcade.arkanoid.localization.LocalizationService;
 import com.arcade.arkanoid.menu.PauseScene;
 import com.arcade.arkanoid.profile.PlayerProfile;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
@@ -76,8 +77,8 @@ public class GameplayScene extends Scene {
     private String statusMessage = "";
     private LevelDefinition activeLevel;
     private final LocalizationService localization;
-    private BufferedImage paddleImage;
-    private BufferedImage backgroundImage;
+    private BufferedImage paddleImage = null;
+    private BufferedImage backgroundImage = null;
 
     public GameplayScene(GameContext context) {
         super(context);
@@ -89,6 +90,7 @@ public class GameplayScene extends Scene {
     @Override
     public void onEnter() {
         loadPaddleImage();
+        System.out.println("onen");
         loadBackgroundImage();
         if (!initialized) {
             startNewGame();
@@ -105,6 +107,7 @@ public class GameplayScene extends Scene {
         if (paddleImage == null) {
             AssetManager assets = context.getAssets();
             assets.loadImage("paddle", "/graphics/paddle.PNG");
+            System.out.println("load ok");
             paddleImage = assets.getImage("paddle");
         }
     }
@@ -194,6 +197,10 @@ public class GameplayScene extends Scene {
                 PADDLE_SPEED,
                 paddleSkin.fillColor(),
                 paddleSkin.borderColor());
+        if (paddleImage == null) {
+            loadPaddleImage();
+        }
+        paddle.setPaddleImage(paddleImage);
         balls.add(createBall(ballSkin));
         currentBallSpeed = BASE_BALL_SPEED;
         resetBall();
@@ -388,8 +395,15 @@ public class GameplayScene extends Scene {
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 
-            g2.setColor(new Color(12, 16, 40));
-            g2.fillRect(0, 0, canvasWidth, canvasHeight);
+            if (backgroundImage == null) {
+                loadBackgroundImage();
+            }
+            if (backgroundImage != null) {
+                g2.drawImage(backgroundImage, 0, 0, canvasWidth, canvasHeight, null);
+            } else {
+                g2.setColor(new Color(12, 16, 40));
+                g2.fillRect(0, 0, canvasWidth, canvasHeight);
+            }
 
             g2.setColor(new Color(18, 22, 54));
             g2.fillRect(0, 0, canvasWidth, 50);
@@ -589,7 +603,6 @@ public class GameplayScene extends Scene {
         for (Brick brick : bricks) {
             if (brick.isDestroyed())
                 continue;
-            }
             Rectangle2D brickBounds = brick.getBounds();
             if (brickBounds.intersects(ballBounds)) {
                 Rectangle2D intersection = brickBounds.createIntersection(ballBounds);
@@ -756,58 +769,8 @@ public class GameplayScene extends Scene {
         resetBall();
     }
 
-    @Override
-    public void render(Graphics2D graphics) {
-        int width = context.getConfig().width();
-        int height = context.getConfig().height();
 
-        drawBackground(graphics);
-        visualEffects.drawGameAreaBorder(graphics, width, height);
-        renderGameElements(graphics);
-        renderStatusMessage(graphics);
-    }
-
-    /**
-     * Factory method to render all game elements.
-     */
-    private void renderGameElements(Graphics2D graphics) {
-        int width = context.getConfig().width();
-        int height = context.getConfig().height();
-        panelRenderer.render(graphics, width, height, score, lives, activeLevel, objectiveEngine.snapshot());
-
-        bricks.forEach(brick -> brick.render(graphics));
-        paddle.render(graphics);
-        ball.render(graphics);
-        powerUps.forEach(powerUp -> powerUp.render(graphics));
-    }
-
-    /**
-     * Factory method to render status messages.
-     */
-    private void renderStatusMessage(Graphics2D graphics) {
-        if (!paused && (awaitingLaunch || gameOver || !statusMessage.isEmpty())) {
-            String message = statusMessage.isEmpty() ? localization.translate("gameplay.prompt.launch") : statusMessage;
-            hudRenderer.renderCenterMessage(graphics, message,
-                    context.getConfig().width(), context.getConfig().height());
-        }
-    }
-
-    private void drawBackground(Graphics2D graphics) {
-        graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-        // Draw background image if available
-        if (backgroundImage != null) {
-            int width = context.getConfig().width();
-            int height = context.getConfig().height();
-            graphics.drawImage(backgroundImage, 0, 0, width, height, null);
-        } else {
-            // Fallback to solid color
-            graphics.setColor(new Color(18, 18, 30));
-            graphics.fillRect(0, 0, context.getConfig().width(), context.getConfig().height());
-        }
-    }
-
-    private static class SceneObjectiveListener implements ObjectiveEngine.Listener {
+    private class SceneObjectiveListener implements ObjectiveEngine.Listener {
         @Override
         public void onObjectiveProgress(ObjectiveEngine.ObjectiveState state) {
         }

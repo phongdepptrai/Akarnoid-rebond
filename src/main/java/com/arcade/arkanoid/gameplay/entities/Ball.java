@@ -57,18 +57,6 @@ public class Ball extends AbstractEntity {
         trail.clear();
     }
 
-    @Override
-    public void update(double deltaTime) {
-        super.update(deltaTime);
-        
-        // Add current position to trail if ball is moving
-        if (velocity.x != 0 || velocity.y != 0) {
-            trail.add(new TrailPoint(position.x + width / 2, position.y + height / 2));
-            if (trail.size() > MAX_TRAIL_LENGTH) {
-                trail.poll();
-            }
-        }
-    }
 
     public void update(double deltaTime) {
         super.update(deltaTime);
@@ -78,6 +66,12 @@ public class Ball extends AbstractEntity {
                 fireActive = false;
                 fillColor = baseFillColor;
                 borderColor = baseBorderColor;
+            }
+        }
+        if (velocity.x != 0 || velocity.y != 0) {
+            trail.add(new TrailPoint(position.x + width / 2, position.y + height / 2));
+            if (trail.size() > MAX_TRAIL_LENGTH) {
+                trail.poll();
             }
         }
     }
