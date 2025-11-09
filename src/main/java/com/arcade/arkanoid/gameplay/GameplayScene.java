@@ -15,18 +15,20 @@ import com.arcade.arkanoid.gameplay.levels.LevelManager;
 import com.arcade.arkanoid.gameplay.objectives.ObjectiveEngine;
 import com.arcade.arkanoid.gameplay.objectives.StandardObjectiveEngine;
 import com.arcade.arkanoid.gameplay.system.HudRenderer;
+import com.arcade.arkanoid.gameplay.system.PowerUpController;
+import com.arcade.arkanoid.gameplay.system.PaddleGunSystem;
 import com.arcade.arkanoid.localization.LocalizationService;
 import com.arcade.arkanoid.menu.PauseScene;
 import com.arcade.arkanoid.profile.PlayerProfile;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.event.KeyEvent;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
@@ -39,17 +41,22 @@ public class GameplayScene extends Scene {
     private static final double PADDLE_Y_OFFSET = 60;
     private static final double POWERUP_SIZE = 18;
     private static final double POWERUP_DROP_CHANCE = 0.15;
+    private static final int MAX_LIVES = 9;
+    private static final int MAX_SIMULTANEOUS_BALLS = 5;
+    private static final double FIRE_BALL_DURATION_SECONDS = 8.0;
 
     private final LevelManager levelManager = new LevelManager();
     private final HudRenderer hudRenderer;
     private final Random random = new Random();
     private final List<Brick> bricks = new ArrayList<>();
-    private final List<PowerUp> powerUps = new ArrayList<>();
+    private final List<Ball> balls = new ArrayList<>();
+    private final List<Ball> pendingBalls = new ArrayList<>();
     private final ObjectiveEngine objectiveEngine = new StandardObjectiveEngine();
     private final ObjectiveEngine.Listener objectiveListener = new SceneObjectiveListener();
+    private final PowerUpController powerUpController;
+    private final PaddleGunSystem paddleGunSystem = new PaddleGunSystem();
 
     private Paddle paddle;
-    private Ball ball;
     private double currentBallSpeed;
     private int score = 0;
     private int lives = 3;
@@ -66,6 +73,7 @@ public class GameplayScene extends Scene {
         super(context);
         this.localization = context.getLocalizationService();
         this.hudRenderer = new HudRenderer(localization);
+        this.powerUpController = new PowerUpController(random, POWERUP_DROP_CHANCE, POWERUP_SIZE);
     }
 
     @Override
@@ -114,7 +122,10 @@ public class GameplayScene extends Scene {
 
     private void loadLevel() {
         bricks.clear();
-        powerUps.clear();
+        powerUpController.reset();
+        paddleGunSystem.reset();
+        balls.clear();
+        pendingBalls.clear();
         awaitingLaunch = true;
         stageCleared = false;
         gameOver = false;
@@ -133,19 +144,55 @@ public class GameplayScene extends Scene {
                 PADDLE_SPEED,
                 paddleSkin.fillColor(),
                 paddleSkin.borderColor());
-        ball = new Ball(0, 0, BALL_SIZE, ballSkin.fillColor(), ballSkin.borderColor());
+        balls.add(createBall(ballSkin));
         currentBallSpeed = BASE_BALL_SPEED;
         resetBall();
         buildBricks(activeLevel);
     }
 
+    private Ball primaryBall() {
+        return balls.isEmpty() ? null : balls.get(0);
+    }
+
+    private Ball createBall(SkinCatalog.BallSkin skin) {
+        return new Ball(0, 0, BALL_SIZE, skin.fillColor(), skin.borderColor());
+    }
+
+    private void addExtraBall(Ball ball) {
+        if (ball != null) {
+            pendingBalls.add(ball);
+        }
+    }
+
     private void resetBall() {
+        PlayerProfile profile = context.getProfileManager().getActiveProfile();
+        SkinCatalog.BallSkin ballSkin = SkinCatalog.ballSkin(profile.getActiveBallSkin());
+        if (balls.isEmpty()) {
+            balls.add(createBall(ballSkin));
+        } else {
+            Ball primary = primaryBall();
+            if (primary != null) {
+                primary.setBaseColors(ballSkin.fillColor(), ballSkin.borderColor());
+            }
+            if (balls.size() > 1) {
+                Ball head = primary;
+                balls.clear();
+                if (head != null) {
+                    balls.add(head);
+                }
+            }
+        }
+        Ball primary = primaryBall();
         awaitingLaunch = true;
-        ball.resetPosition(
-                paddle.getPosition().x + paddle.getWidth() / 2.0 - BALL_SIZE / 2.0,
-                paddle.getPosition().y - BALL_SIZE - 4);
-        currentBallSpeed = Math.max(260, currentBallSpeed);
-        ball.setVelocity(0, 0);
+        currentBallSpeed = BASE_BALL_SPEED;
+        if (primary != null) {
+            primary.resetPosition(
+                    paddle.getPosition().x + paddle.getWidth() / 2.0 - BALL_SIZE / 2.0,
+                    paddle.getPosition().y - BALL_SIZE - 4);
+            primary.setVelocity(0, 0);
+            primary.clearFire();
+        }
+        pendingBalls.clear();
     }
 
     private void buildBricks(LevelDefinition definition) {
@@ -228,13 +275,11 @@ public class GameplayScene extends Scene {
                 launchBall();
             }
         } else {
-            ball.update(deltaTime);
-            constrainBallWithinArena();
-            handlePaddleCollision();
-            handleBrickCollisions();
+            updateBalls(deltaTime);
         }
 
-        updatePowerUps(deltaTime);
+        paddleGunSystem.update(deltaTime, paddle, bricks, this::onBrickDestroyed);
+        powerUpController.update(deltaTime, paddle, context.getConfig().height(), this::applyPowerUp);
 
         objectiveEngine.update(deltaTime);
 
@@ -243,11 +288,95 @@ public class GameplayScene extends Scene {
         }
     }
 
+    @Override
+    public void render(Graphics2D graphics) {
+        Graphics2D g2 = (Graphics2D) graphics.create();
+        try {
+            int canvasWidth = context.getConfig().width();
+            int canvasHeight = context.getConfig().height();
+
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+
+            g2.setColor(new Color(12, 16, 40));
+            g2.fillRect(0, 0, canvasWidth, canvasHeight);
+
+            g2.setColor(new Color(18, 22, 54));
+            g2.fillRect(0, 0, canvasWidth, 50);
+
+            renderArena(g2, canvasWidth);
+
+            String levelLabel = activeLevel != null ? activeLevel.displayName() : "";
+            hudRenderer.renderHud(g2, score, lives, levelLabel, objectiveEngine.snapshot());
+
+            String message = null;
+            if (paused) {
+                message = localization.translate("gameplay.message.paused");
+            } else if (!statusMessage.isBlank()) {
+                message = statusMessage;
+            }
+
+            if (message != null && !message.isBlank()) {
+                hudRenderer.renderCenterMessage(g2, message, canvasWidth, canvasHeight);
+            } else if (awaitingLaunch && !gameOver && !paused) {
+                renderLaunchPrompt(g2, canvasWidth, canvasHeight);
+            }
+        } finally {
+            g2.dispose();
+        }
+    }
+
+    private void renderArena(Graphics2D graphics, int canvasWidth) {
+        graphics.setStroke(new BasicStroke(2f));
+        graphics.setColor(new Color(255, 255, 255, 40));
+        graphics.drawLine(0, 50, canvasWidth, 50);
+
+        for (Brick brick : bricks) {
+            brick.render(graphics);
+        }
+
+        powerUpController.render(graphics);
+        paddleGunSystem.render(graphics);
+
+        if (paddle != null) {
+            paddle.render(graphics);
+        }
+
+        for (Ball ball : balls) {
+            ball.render(graphics);
+        }
+    }
+
+    private void renderLaunchPrompt(Graphics2D graphics, int canvasWidth, int canvasHeight) {
+        String prompt = localization.translate("gameplay.prompt.launch");
+        if (prompt == null || prompt.isBlank()) {
+            return;
+        }
+        Font previous = graphics.getFont();
+        graphics.setFont(previous.deriveFont(Font.BOLD, 20f));
+        graphics.setColor(new Color(255, 255, 255, 200));
+        int textWidth = graphics.getFontMetrics().stringWidth(prompt);
+        int x = (canvasWidth - textWidth) / 2;
+        int y = canvasHeight - 36;
+        graphics.drawString(prompt, x, y);
+        graphics.setFont(previous);
+    }
+
     private boolean isLevelComplete() {
         if (objectiveEngine.arePrimaryObjectivesMet()) {
             return true;
         }
         return bricks.stream().allMatch(Brick::isDestroyed);
+    }
+
+    private void handleGameOverInput(InputManager input) {
+        if (input.isKeyJustPressed(KeyEvent.VK_ENTER)) {
+            startNewGame();
+            return;
+        }
+        if (input.isKeyJustPressed(KeyEvent.VK_ESCAPE)) {
+            context.getScenes().switchTo(ArkanoidGame.SCENE_MENU);
+        }
     }
 
     private void handleMovementInput(InputManager input) {
@@ -264,82 +393,113 @@ public class GameplayScene extends Scene {
     }
 
     private void attachBallToPaddle() {
-        ball.getPosition().x = paddle.getPosition().x + paddle.getWidth() / 2.0 - BALL_SIZE / 2.0;
-        ball.getPosition().y = paddle.getPosition().y - BALL_SIZE - 4;
+        Ball primary = primaryBall();
+        if (primary == null) {
+            return;
+        }
+        primary.getPosition().x = paddle.getPosition().x + paddle.getWidth() / 2.0 - BALL_SIZE / 2.0;
+        primary.getPosition().y = paddle.getPosition().y - BALL_SIZE - 4;
     }
 
     private void launchBall() {
+        Ball primary = primaryBall();
+        if (primary == null) {
+            return;
+        }
         awaitingLaunch = false;
         currentBallSpeed = BASE_BALL_SPEED;
         statusMessage = "";
-        setBallVelocityByAngle(Math.toRadians(random.nextDouble() * 120 - 60));
+        setBallVelocityByAngle(primary, Math.toRadians(random.nextDouble() * 120 - 60));
     }
 
-    private void setBallVelocityByAngle(double angle) {
+    private void setBallVelocityByAngle(Ball ballRef, double angle) {
+        if (ballRef == null) {
+            return;
+        }
         double vx = currentBallSpeed * Math.sin(angle);
         double vy = -Math.abs(currentBallSpeed * Math.cos(angle));
-        ball.setVelocity(vx, vy);
+        ballRef.setVelocity(vx, vy);
     }
 
-    private void constrainBallWithinArena() {
+    private void updateBalls(double deltaTime) {
+        List<Ball> snapshot = new ArrayList<>(balls);
+        for (Ball ballRef : snapshot) {
+            ballRef.update(deltaTime);
+            if (constrainBallWithinArena(ballRef)) {
+                continue;
+            }
+            handlePaddleCollision(ballRef);
+            handleBrickCollisions(ballRef);
+        }
+        if (!pendingBalls.isEmpty()) {
+            balls.addAll(pendingBalls);
+            pendingBalls.clear();
+        }
+    }
+
+    private boolean constrainBallWithinArena(Ball ballRef) {
         double width = context.getConfig().width();
         double height = context.getConfig().height();
         boolean hitBoundary = false;
 
-        if (ball.getPosition().x <= 0) {
-            ball.getPosition().x = 0;
-            ball.invertX();
+        if (ballRef.getPosition().x <= 0) {
+            ballRef.getPosition().x = 0;
+            ballRef.invertX();
             hitBoundary = true;
-        } else if (ball.getPosition().x + ball.getWidth() >= width) {
-            ball.getPosition().x = width - ball.getWidth();
-            ball.invertX();
-            hitBoundary = true;
-        }
-
-        if (ball.getPosition().y <= 50) {
-            ball.getPosition().y = 50;
-            ball.invertY();
+        } else if (ballRef.getPosition().x + ballRef.getWidth() >= width) {
+            ballRef.getPosition().x = width - ballRef.getWidth();
+            ballRef.invertX();
             hitBoundary = true;
         }
 
-        if (ball.getPosition().y > height) {
-            loseLife();
-            return;
+        if (ballRef.getPosition().y <= 50) {
+            ballRef.getPosition().y = 50;
+            ballRef.invertY();
+            hitBoundary = true;
+        }
+
+        if (ballRef.getPosition().y > height) {
+            balls.remove(ballRef);
+            if (balls.isEmpty()) {
+                loseLife();
+            }
+            return true;
         }
 
         if (hitBoundary) {
-            normalizeBallSpeed();
+            normalizeBallSpeed(ballRef);
         }
+        return false;
     }
 
-    private void normalizeBallSpeed() {
-        double vx = ball.getVelocity().x;
-        double vy = ball.getVelocity().y;
+    private void normalizeBallSpeed(Ball ballRef) {
+        double vx = ballRef.getVelocity().x;
+        double vy = ballRef.getVelocity().y;
         double length = Math.sqrt(vx * vx + vy * vy);
         if (length == 0) {
             return;
         }
         double scale = currentBallSpeed / length;
-        ball.setVelocity(vx * scale, vy * scale);
+        ballRef.setVelocity(vx * scale, vy * scale);
     }
 
-    private void handlePaddleCollision() {
-        Rectangle2D ballBounds = ball.getBounds();
+    private void handlePaddleCollision(Ball ballRef) {
+        Rectangle2D ballBounds = ballRef.getBounds();
         Rectangle2D paddleBounds = paddle.getBounds();
-        if (ballBounds.intersects(paddleBounds) && ball.getVelocity().y > 0) {
+        if (ballBounds.intersects(paddleBounds) && ballRef.getVelocity().y > 0) {
             double paddleCenter = paddleBounds.getCenterX();
             double ballCenter = ballBounds.getCenterX();
             double offset = (ballCenter - paddleCenter) / (paddle.getWidth() / 2.0);
             offset = Math.max(-1, Math.min(1, offset));
             double angle = Math.toRadians(60 * offset);
             currentBallSpeed = Math.min(560, currentBallSpeed * 1.02);
-            setBallVelocityByAngle(angle);
-            ball.getPosition().y = paddle.getPosition().y - BALL_SIZE - 1;
+            setBallVelocityByAngle(ballRef, angle);
+            ballRef.getPosition().y = paddle.getPosition().y - BALL_SIZE - 1;
         }
     }
 
-    private void handleBrickCollisions() {
-        Rectangle2D ballBounds = ball.getBounds();
+    private void handleBrickCollisions(Ball ballRef) {
+        Rectangle2D ballBounds = ballRef.getBounds();
         for (Brick brick : bricks) {
             if (brick.isDestroyed()) {
                 continue;
@@ -347,57 +507,37 @@ public class GameplayScene extends Scene {
             Rectangle2D brickBounds = brick.getBounds();
             if (brickBounds.intersects(ballBounds)) {
                 Rectangle2D intersection = brickBounds.createIntersection(ballBounds);
-                if (intersection.getWidth() >= intersection.getHeight()) {
-                    ball.invertY();
-                } else {
-                    ball.invertX();
+                if (!ballRef.isFireActive()) {
+                    if (intersection.getWidth() >= intersection.getHeight()) {
+                        ballRef.invertY();
+                    } else {
+                        ballRef.invertX();
+                    }
                 }
                 brick.hit();
-
-                if (brick.isDestroyed()) {
-                    score += brick.getScoreValue();
-                    objectiveEngine.handleEvent(new ObjectiveEngine.ScoreAwardedEvent(brick.getScoreValue()));
-                    objectiveEngine.handleEvent(new ObjectiveEngine.BrickClearedEvent(
-                            brick.getGridColumn(),
-                            brick.getGridRow(),
-                            brick.getBlueprintType(),
-                            brick.getTags()));
-                    maybeSpawnPowerUp(brick);
+                if (ballRef.isFireActive()) {
+                    while (!brick.isDestroyed()) {
+                        brick.hit();
+                    }
                 }
-                normalizeBallSpeed();
+                if (brick.isDestroyed()) {
+                    onBrickDestroyed(brick);
+                }
+                normalizeBallSpeed(ballRef);
                 break;
             }
         }
     }
 
-    private void maybeSpawnPowerUp(Brick brick) {
-        if (random.nextDouble() > POWERUP_DROP_CHANCE) {
-            return;
-        }
-        PowerUp.Type type = random.nextBoolean() ? PowerUp.Type.EXPAND_PADDLE : PowerUp.Type.SLOW_BALL;
-        PowerUp powerUp = new PowerUp(
-                brick.getPosition().x + brick.getWidth() / 2.0 - POWERUP_SIZE / 2.0,
-                brick.getPosition().y + brick.getHeight() / 2.0 - POWERUP_SIZE / 2.0,
-                POWERUP_SIZE,
-                type,
-                type == PowerUp.Type.EXPAND_PADDLE ? new Color(0x8BC34A) : new Color(0xFFEB3B));
-        powerUps.add(powerUp);
-    }
-
-    private void updatePowerUps(double deltaTime) {
-        Iterator<PowerUp> iterator = powerUps.iterator();
-        while (iterator.hasNext()) {
-            PowerUp powerUp = iterator.next();
-            powerUp.update(deltaTime);
-            if (powerUp.getPosition().y > context.getConfig().height()) {
-                iterator.remove();
-                continue;
-            }
-            if (powerUp.getBounds().intersects(paddle.getBounds())) {
-                applyPowerUp(powerUp.getType());
-                iterator.remove();
-            }
-        }
+    private void onBrickDestroyed(Brick brick) {
+        score += brick.getScoreValue();
+        objectiveEngine.handleEvent(new ObjectiveEngine.ScoreAwardedEvent(brick.getScoreValue()));
+        objectiveEngine.handleEvent(new ObjectiveEngine.BrickClearedEvent(
+                brick.getGridColumn(),
+                brick.getGridRow(),
+                brick.getBlueprintType(),
+                brick.getTags()));
+        powerUpController.maybeSpawnFrom(brick);
     }
 
     private void applyPowerUp(PowerUp.Type type) {
@@ -406,11 +546,58 @@ public class GameplayScene extends Scene {
                 paddle.setWidth(Math.min(paddle.getWidth() * 1.3, 240));
                 break;
             case SLOW_BALL:
-                currentBallSpeed = Math.max(260, currentBallSpeed * 0.8);
-                normalizeBallSpeed();
+                slowBalls();
+                break;
+            case MULTI_BALL:
+                spawnMultiBall();
+                break;
+            case FIRE_BALL:
+                igniteFireBalls();
+                break;
+            case PADDLE_GUN:
+                paddleGunSystem.activate();
+                break;
+            case EXTRA_LIFE:
+                lives = Math.min(lives + 1, MAX_LIVES);
                 break;
             default:
                 break;
+        }
+    }
+
+    private void slowBalls() {
+        currentBallSpeed = Math.max(260, currentBallSpeed * 0.8);
+        for (Ball ballRef : balls) {
+            normalizeBallSpeed(ballRef);
+        }
+    }
+
+    private void spawnMultiBall() {
+        if (balls.isEmpty()) {
+            return;
+        }
+        if (balls.size() >= MAX_SIMULTANEOUS_BALLS) {
+            return;
+        }
+        Ball reference = primaryBall();
+        if (reference == null) {
+            return;
+        }
+        Ball cloneA = reference.duplicate();
+        Ball cloneB = reference.duplicate();
+        double baseAngle = Math.atan2(reference.getVelocity().y, reference.getVelocity().x);
+        if (Double.isNaN(baseAngle) || Double.isInfinite(baseAngle)) {
+            baseAngle = Math.toRadians(-45);
+        }
+        setBallVelocityByAngle(cloneA, baseAngle + Math.toRadians(25));
+        setBallVelocityByAngle(cloneB, baseAngle - Math.toRadians(25));
+        addExtraBall(cloneA);
+        addExtraBall(cloneB);
+    }
+
+    private void igniteFireBalls() {
+        for (Ball ballRef : balls) {
+            ballRef.setFire(FIRE_BALL_DURATION_SECONDS);
         }
     }
 
@@ -442,74 +629,48 @@ public class GameplayScene extends Scene {
 
     private void loseLife() {
         lives--;
+        paddleGunSystem.reset();
+        pendingBalls.clear();
         if (lives <= 0) {
+            balls.clear();
             gameOver = true;
             statusMessage = localization.translate("gameplay.message.gameOver");
-        } else {
-            statusMessage = localization.translate("gameplay.message.lifeLost");
-            paddle.setWidth(BASE_PADDLE_WIDTH);
-            currentBallSpeed = BASE_BALL_SPEED;
-            resetBall();
+            return;
         }
+        statusMessage = localization.translate("gameplay.message.lifeLost");
+        paddle.setWidth(BASE_PADDLE_WIDTH);
+        currentBallSpeed = BASE_BALL_SPEED;
+        PlayerProfile profile = context.getProfileManager().getActiveProfile();
+        SkinCatalog.BallSkin ballSkin = SkinCatalog.ballSkin(profile.getActiveBallSkin());
+        balls.clear();
+        balls.add(createBall(ballSkin));
+        resetBall();
     }
 
-    private void handleGameOverInput(InputManager input) {
-        if (input.isKeyJustPressed(KeyEvent.VK_ENTER)) {
-            startNewGame();
-        } else if (input.isKeyJustPressed(KeyEvent.VK_ESCAPE)) {
-            context.getScenes().switchTo(ArkanoidGame.SCENE_MENU);
-        }
-    }
-
-    @Override
-    public void render(Graphics2D graphics) {
-        drawBackground(graphics);
-        String levelName = activeLevel == null ? "Loading..." : activeLevel.displayName();
-        hudRenderer.renderHud(graphics, score, lives, levelName, objectiveEngine.snapshot());
-
-        bricks.forEach(brick -> brick.render(graphics));
-        paddle.render(graphics);
-        ball.render(graphics);
-        powerUps.forEach(powerUp -> powerUp.render(graphics));
-
-        if (paused) {
-            graphics.setColor(new Color(0, 0, 0, 150));
-            graphics.fillRect(0, 0, context.getConfig().width(), context.getConfig().height());
-            hudRenderer.renderCenterMessage(graphics,
-                    localization.translate("gameplay.message.paused"),
-                    context.getConfig().width(),
-                    context.getConfig().height());
-        } else if (awaitingLaunch || gameOver || !statusMessage.isEmpty()) {
-            hudRenderer.renderCenterMessage(graphics,
-                    statusMessage.isEmpty() ? localization.translate("gameplay.prompt.launch") : statusMessage,
-                    context.getConfig().width(),
-                    context.getConfig().height());
-        }
-    }
-
-    private void drawBackground(Graphics2D graphics) {
-        graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        graphics.setColor(new Color(18, 18, 30));
-        graphics.fillRect(0, 0, context.getConfig().width(), context.getConfig().height());
-        graphics.setColor(new Color(49, 49, 77));
-        graphics.setStroke(new BasicStroke(2));
-        graphics.drawRect(40, 50, context.getConfig().width() - 80, context.getConfig().height() - 110);
-    }
-
-    private static class SceneObjectiveListener implements ObjectiveEngine.Listener {
+    private final class SceneObjectiveListener implements ObjectiveEngine.Listener {
         @Override
         public void onObjectiveProgress(ObjectiveEngine.ObjectiveState state) {
-            // Intentionally left blank; HUD pulls latest snapshot each frame.
         }
 
         @Override
         public void onObjectiveCompleted(ObjectiveEngine.ObjectiveState state) {
-            // Future: hook celebrations or particle effects.
+            statusMessage = summarizeObjective("hud.objectiveIndicator.completed", state);
         }
 
         @Override
         public void onObjectiveFailed(ObjectiveEngine.ObjectiveState state) {
-            // Future: trigger failure messaging or penalties.
+            statusMessage = summarizeObjective("hud.objectiveIndicator.failed", state);
+        }
+
+        private String summarizeObjective(String indicatorKey, ObjectiveEngine.ObjectiveState state) {
+            String indicator = localization.translate(indicatorKey);
+            String labelKey = "objective." + state.id();
+            String label = localization.translate(labelKey);
+            if (label.equals(labelKey)) {
+                label = state.id();
+            }
+            return indicator + " " + label;
         }
     }
+
 }
