@@ -23,7 +23,6 @@ import com.arcade.arkanoid.localization.LocalizationService;
 import com.arcade.arkanoid.menu.PauseScene;
 import com.arcade.arkanoid.profile.PlayerProfile;
 
-import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
@@ -395,6 +394,7 @@ public class GameplayScene extends Scene {
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 
+            // Draw background
             if (backgroundImage == null) {
                 loadBackgroundImage();
             }
@@ -405,14 +405,16 @@ public class GameplayScene extends Scene {
                 g2.fillRect(0, 0, canvasWidth, canvasHeight);
             }
 
-            g2.setColor(new Color(18, 22, 54));
-            g2.fillRect(0, 0, canvasWidth, 50);
+            // Draw ARKANOID title and neon border dots
+            visualEffects.drawGameAreaBorder(g2, canvasWidth, canvasHeight);
 
-            renderArena(g2, canvasWidth);
+            // Render game objects (bricks, paddle, balls, power-ups)
+            renderArena(g2);
 
-            String levelLabel = activeLevel != null ? activeLevel.displayName() : "";
-            hudRenderer.renderHud(g2, score, lives, levelLabel, objectiveEngine.snapshot());
+            // Render side panels with score, lives, level, and objectives
+            panelRenderer.render(g2, canvasWidth, canvasHeight, score, lives, activeLevel, objectiveEngine.snapshot());
 
+            // Render center messages
             String message = null;
             if (paused) {
                 message = localization.translate("gameplay.message.paused");
@@ -430,11 +432,8 @@ public class GameplayScene extends Scene {
         }
     }
 
-    private void renderArena(Graphics2D graphics, int canvasWidth) {
-        graphics.setStroke(new BasicStroke(2f));
-        graphics.setColor(new Color(255, 255, 255, 40));
-        graphics.drawLine(0, 50, canvasWidth, 50);
-
+    private void renderArena(Graphics2D graphics) {
+        // Render game objects
         for (Brick brick : bricks) {
             brick.render(graphics);
         }
@@ -539,26 +538,36 @@ public class GameplayScene extends Scene {
     }
 
     private boolean constrainBallWithinArena(Ball ballRef) {
-        double width = context.getConfig().width();
-        double height = context.getConfig().height();
+        int width = context.getConfig().width();
+        int height = context.getConfig().height();
         boolean hitBoundary = false;
 
-        if (ballRef.getPosition().x <= 0) {
-            ballRef.getPosition().x = 0;
+        // Use visual effects boundaries (neon dot border)
+        double leftBoundary = visualEffects.getLeftBound();
+        double rightBoundary = visualEffects.getRightBound(width);
+        double topBoundary = visualEffects.getTopBound();
+
+        // Left boundary
+        if (ballRef.getPosition().x <= leftBoundary) {
+            ballRef.getPosition().x = leftBoundary;
             ballRef.invertX();
             hitBoundary = true;
-        } else if (ballRef.getPosition().x + ballRef.getWidth() >= width) {
-            ballRef.getPosition().x = width - ballRef.getWidth();
+        }
+        // Right boundary
+        else if (ballRef.getPosition().x + ballRef.getWidth() >= rightBoundary) {
+            ballRef.getPosition().x = rightBoundary - ballRef.getWidth();
             ballRef.invertX();
             hitBoundary = true;
         }
 
-        if (ballRef.getPosition().y <= 50) {
-            ballRef.getPosition().y = 50;
+        // Top boundary
+        if (ballRef.getPosition().y <= topBoundary) {
+            ballRef.getPosition().y = topBoundary;
             ballRef.invertY();
             hitBoundary = true;
         }
 
+        // Bottom - lose life
         if (ballRef.getPosition().y > height) {
             balls.remove(ballRef);
             if (balls.isEmpty()) {
@@ -768,7 +777,6 @@ public class GameplayScene extends Scene {
         balls.add(createBall(ballSkin));
         resetBall();
     }
-
 
     private class SceneObjectiveListener implements ObjectiveEngine.Listener {
         @Override
