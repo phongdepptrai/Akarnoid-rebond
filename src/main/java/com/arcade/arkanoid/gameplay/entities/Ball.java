@@ -7,8 +7,12 @@ import java.util.LinkedList;
 import java.util.Queue;
 
 public class Ball extends AbstractEntity {
-    private final Color fillColor;
-    private final Color borderColor;
+    private Color baseFillColor;
+    private Color baseBorderColor;
+    private Color fillColor;
+    private Color borderColor;
+    private boolean fireActive;
+    private double fireTimer;
     private final Queue<TrailPoint> trail = new LinkedList<>();
     private static final int MAX_TRAIL_LENGTH = 8;
     
@@ -26,6 +30,8 @@ public class Ball extends AbstractEntity {
 
     public Ball(double x, double y, double size, Color fillColor, Color borderColor) {
         super(x, y, size, size);
+        this.baseFillColor = fillColor;
+        this.baseBorderColor = borderColor;
         this.fillColor = fillColor;
         this.borderColor = borderColor;
     }
@@ -64,6 +70,62 @@ public class Ball extends AbstractEntity {
         }
     }
 
+    public void update(double deltaTime) {
+        super.update(deltaTime);
+        if (fireActive) {
+            fireTimer -= deltaTime;
+            if (fireTimer <= 0) {
+                fireActive = false;
+                fillColor = baseFillColor;
+                borderColor = baseBorderColor;
+            }
+        }
+    }
+
+    public void setBaseColors(Color fill, Color border) {
+        this.baseFillColor = fill;
+        this.baseBorderColor = border;
+        if (!fireActive) {
+            this.fillColor = fill;
+            this.borderColor = border;
+        }
+    }
+
+    public void setFire(double durationSeconds) {
+        fireActive = true;
+        fireTimer = Math.max(fireTimer, durationSeconds);
+        fillColor = blend(baseFillColor, Color.ORANGE, 0.6);
+        borderColor = Color.ORANGE.darker();
+    }
+
+    public void clearFire() {
+        fireActive = false;
+        fireTimer = 0;
+        fillColor = baseFillColor;
+        borderColor = baseBorderColor;
+    }
+
+    public boolean isFireActive() {
+        return fireActive;
+    }
+
+    public Ball duplicate() {
+        Ball copy = new Ball(position.x, position.y, width, baseFillColor, baseBorderColor);
+        copy.setVelocity(velocity.x, velocity.y);
+        if (fireActive) {
+            copy.setFire(fireTimer);
+        }
+        return copy;
+    }
+
+    public Color getFillColor() {
+        return baseFillColor;
+    }
+
+    public Color getBorderColor() {
+        return baseBorderColor;
+    }
+
     @Override
     public void render(Graphics2D graphics) {
         // Draw trail with fading effect
@@ -86,8 +148,23 @@ public class Ball extends AbstractEntity {
         // Draw main ball
         graphics.setColor(fillColor);
         graphics.fillOval((int) position.x, (int) position.y, (int) width, (int) height);
-        graphics.setColor(borderColor);
+        graphics.setColor(fireActive ? Color.WHITE : borderColor);
         graphics.setStroke(new java.awt.BasicStroke(2));
         graphics.drawOval((int) position.x, (int) position.y, (int) width, (int) height);
+    }
+
+    private static Color blend(Color a, Color b, double ratio) {
+        if (a == null && b == null) {
+            return Color.BLACK;
+        } else if (a == null) {
+            return b;
+        } else if (b == null) {
+            return a;
+        }
+        double r = Math.max(0, Math.min(1, ratio));
+        int red = (int) (a.getRed() * (1 - r) + b.getRed() * r);
+        int green = (int) (a.getGreen() * (1 - r) + b.getGreen() * r);
+        int blue = (int) (a.getBlue() * (1 - r) + b.getBlue() * r);
+        return new Color(red, green, blue);
     }
 }
