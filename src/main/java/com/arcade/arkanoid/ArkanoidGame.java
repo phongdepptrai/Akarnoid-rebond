@@ -6,6 +6,7 @@ import com.arcade.arkanoid.engine.scene.SceneManager;
 import com.arcade.arkanoid.gameplay.GameplayScene;
 import com.arcade.arkanoid.menu.MainMenuScene;
 import com.arcade.arkanoid.menu.PauseScene;
+import com.arcade.arkanoid.menu.ProfileDetailScene;
 import com.arcade.arkanoid.menu.worldmap.WorldMapScene;
 import com.arcade.arkanoid.menu.save.SaveMenuScene;
 import com.arcade.arkanoid.menu.shop.ShopScene;
@@ -16,6 +17,7 @@ public class ArkanoidGame extends Game {
     public static final String SCENE_PAUSE = "pause";
     public static final String SCENE_MAP = "map";
     public static final String SCENE_SAVE = "save";
+    public static final String SCENE_PROFILE = "profile";
     public static final String SCENE_SHOP = "shop";
 
     public ArkanoidGame() {
@@ -29,6 +31,7 @@ public class ArkanoidGame extends Game {
         sceneManager.registerPersistent(SCENE_PAUSE, PauseScene::new);
         sceneManager.registerPersistent(SCENE_MAP, WorldMapScene::new);
         sceneManager.registerPersistent(SCENE_SAVE, SaveMenuScene::new);
+        sceneManager.register(SCENE_PROFILE, ProfileDetailScene::new);
         sceneManager.registerPersistent(SCENE_SHOP, ShopScene::new);
     }
 

@@ -1,10 +1,10 @@
 package com.arcade.arkanoid.gameplay;
 
 import com.arcade.arkanoid.ArkanoidGame;
+import com.arcade.arkanoid.engine.assets.AssetManager;
 import com.arcade.arkanoid.engine.core.GameContext;
 import com.arcade.arkanoid.engine.input.InputManager;
 import com.arcade.arkanoid.engine.scene.Scene;
-import com.arcade.arkanoid.engine.scene.SceneManager;
 import com.arcade.arkanoid.gameplay.entities.Ball;
 import com.arcade.arkanoid.gameplay.entities.Brick;
 import com.arcade.arkanoid.gameplay.entities.Paddle;
@@ -14,6 +14,8 @@ import com.arcade.arkanoid.gameplay.levels.LevelDefinition;
 import com.arcade.arkanoid.gameplay.levels.LevelManager;
 import com.arcade.arkanoid.gameplay.objectives.ObjectiveEngine;
 import com.arcade.arkanoid.gameplay.objectives.StandardObjectiveEngine;
+import com.arcade.arkanoid.gameplay.system.GameplayPanelRenderer;
+import com.arcade.arkanoid.gameplay.system.GameplayVisualEffects;
 import com.arcade.arkanoid.gameplay.system.HudRenderer;
 import com.arcade.arkanoid.gameplay.system.PowerUpController;
 import com.arcade.arkanoid.gameplay.system.PaddleGunSystem;
@@ -21,13 +23,13 @@ import com.arcade.arkanoid.localization.LocalizationService;
 import com.arcade.arkanoid.menu.PauseScene;
 import com.arcade.arkanoid.profile.PlayerProfile;
 
-import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.event.KeyEvent;
 import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -45,9 +47,15 @@ public class GameplayScene extends Scene {
     private static final int MAX_SIMULTANEOUS_BALLS = 5;
     private static final double FIRE_BALL_DURATION_SECONDS = 8.0;
 
+    // Frame/Panel constants
+    public static final int SIDE_PANEL_WIDTH = GameplayPanelRenderer.getPanelWidth();
+
     private final LevelManager levelManager = new LevelManager();
     private final HudRenderer hudRenderer;
+    private final GameplayPanelRenderer panelRenderer = GameplayPanelRenderer.getInstance();
+    private final GameplayVisualEffects visualEffects = GameplayVisualEffects.getInstance();
     private final Random random = new Random();
+
     private final List<Brick> bricks = new ArrayList<>();
     private final List<Ball> balls = new ArrayList<>();
     private final List<Ball> pendingBalls = new ArrayList<>();
@@ -68,6 +76,8 @@ public class GameplayScene extends Scene {
     private String statusMessage = "";
     private LevelDefinition activeLevel;
     private final LocalizationService localization;
+    private BufferedImage paddleImage;
+    private BufferedImage backgroundImage;
 
     public GameplayScene(GameContext context) {
         super(context);
@@ -78,6 +88,8 @@ public class GameplayScene extends Scene {
 
     @Override
     public void onEnter() {
+        loadPaddleImage();
+        loadBackgroundImage();
         if (!initialized) {
             startNewGame();
             initialized = true;
@@ -86,17 +98,38 @@ public class GameplayScene extends Scene {
         statusMessage = "";
     }
 
+    /**
+     * Factory method to load paddle image asset.
+     */
+    private void loadPaddleImage() {
+        if (paddleImage == null) {
+            AssetManager assets = context.getAssets();
+            assets.loadImage("paddle", "/graphics/paddle.PNG");
+            paddleImage = assets.getImage("paddle");
+        }
+    }
+
+    /**
+     * Factory method to load background image asset.
+     */
+    private void loadBackgroundImage() {
+        if (backgroundImage == null) {
+            AssetManager assets = context.getAssets();
+            assets.loadImage("gameplay-background", "/graphics/background2.jpg");
+            backgroundImage = assets.getImage("gameplay-background");
+        }
+    }
+
     public void resumeFromPause() {
         paused = false;
     }
 
     public void pauseGame() {
         paused = true;
-        SceneManager sceneManager = context.getScenes();
-        PauseScene pauseScene = (PauseScene) sceneManager.getPersistentScene(ArkanoidGame.SCENE_PAUSE);
+        PauseScene pauseScene = (PauseScene) context.getScenes().getPersistentScene(ArkanoidGame.SCENE_PAUSE);
         if (pauseScene != null) {
             pauseScene.bindGameplay(this);
-            sceneManager.switchTo(ArkanoidGame.SCENE_PAUSE);
+            context.getScenes().switchTo(ArkanoidGame.SCENE_PAUSE);
         }
     }
 
@@ -121,6 +154,19 @@ public class GameplayScene extends Scene {
     }
 
     private void loadLevel() {
+        clearGameState();
+        activeLevel = levelManager.current();
+        objectiveEngine.bind(activeLevel, objectiveListener);
+        objectiveEngine.resetProgress();
+
+        createGameEntities();
+        buildBricks(activeLevel);
+    }
+
+    /**
+     * Factory method to clear game state.
+     */
+    private void clearGameState() {
         bricks.clear();
         powerUpController.reset();
         paddleGunSystem.reset();
@@ -130,12 +176,16 @@ public class GameplayScene extends Scene {
         stageCleared = false;
         gameOver = false;
         statusMessage = localization.translate("gameplay.message.ready");
-        activeLevel = levelManager.current();
-        objectiveEngine.bind(activeLevel, objectiveListener);
-        objectiveEngine.resetProgress();
+    }
+
+    /**
+     * Factory method to create paddle and ball entities.
+     */
+    private void createGameEntities() {
         PlayerProfile profile = context.getProfileManager().getActiveProfile();
         SkinCatalog.PaddleSkin paddleSkin = SkinCatalog.paddleSkin(profile.getActivePaddleSkin());
         SkinCatalog.BallSkin ballSkin = SkinCatalog.ballSkin(profile.getActiveBallSkin());
+
         paddle = new Paddle(
                 (context.getConfig().width() - BASE_PADDLE_WIDTH) / 2.0,
                 context.getConfig().height() - PADDLE_Y_OFFSET,
@@ -147,7 +197,6 @@ public class GameplayScene extends Scene {
         balls.add(createBall(ballSkin));
         currentBallSpeed = BASE_BALL_SPEED;
         resetBall();
-        buildBricks(activeLevel);
     }
 
     private Ball primaryBall() {
@@ -198,62 +247,88 @@ public class GameplayScene extends Scene {
     private void buildBricks(LevelDefinition definition) {
         int cols = definition.columns();
         int rows = definition.rows();
-        if (cols <= 0 || rows <= 0) {
+        if (cols <= 0 || rows <= 0)
             return;
-        }
-        double horizontalPadding = 50;
-        double verticalPadding = 90;
+
+        double leftBoundary = SIDE_PANEL_WIDTH + 15;
+        double rightBoundary = context.getConfig().width() - SIDE_PANEL_WIDTH - 15;
+        double horizontalPadding = leftBoundary + 15; // Start bricks 15px inside left border
+        double verticalPadding = 115; // Moved down 25px total (was 90, now 115)
         double gap = 4;
-        double availableWidth = context.getConfig().width() - horizontalPadding * 2;
+        double availableWidth = (rightBoundary - 15) - horizontalPadding;
         double brickWidth = (availableWidth - (cols - 1) * gap) / cols;
         double brickHeight = 24;
 
-        // Sử dụng Set để tránh duplicate
         java.util.Set<String> addedPositions = new java.util.HashSet<>();
 
         definition.bricks().forEach(blueprint -> {
-            int column = blueprint.column();
-            int row = blueprint.row();
-            if (column < 0 || column >= cols || row < 0 || row >= rows) {
+            if (!isValidBrickPosition(blueprint, cols, rows, addedPositions))
                 return;
-            }
 
-            // Kiểm tra duplicate
-            String position = column + "," + row;
-            if (addedPositions.contains(position)) {
-                System.err.println("Skipping duplicate brick at (" + column + "," + row + ")");
-                return;
-            }
-            addedPositions.add(position);
-
-            double x = horizontalPadding + column * (brickWidth + gap);
-            double y = verticalPadding + row * (brickHeight + gap);
-            int hitPoints = Math.max(1, blueprint.hitPoints());
-            int scoreValue = 50 * hitPoints;
-            Brick brick = new Brick(
-                    x,
-                    y,
-                    brickWidth,
-                    brickHeight,
-                    hitPoints,
-                    scoreValue,
-                    column,
-                    row,
-                    blueprint.brickType(),
-                    blueprint.tags(),
-                    blueprint.modifiers());
+            Brick brick = createBrick(blueprint, brickWidth, brickHeight, gap, horizontalPadding, verticalPadding);
             bricks.add(brick);
         });
     }
 
-    @Override
-    public void update(double deltaTime) {
-        if (paused) {
-            return;
+    /**
+     * Validates brick position within grid boundaries and prevents duplicates.
+     * 
+     * @param blueprint      The brick blueprint containing position data
+     * @param cols           Maximum number of columns in the grid
+     * @param rows           Maximum number of rows in the grid
+     * @param addedPositions Set tracking already-placed brick positions
+     * @return true if position is valid and not duplicate, false otherwise
+     */
+    private boolean isValidBrickPosition(LevelDefinition.BrickBlueprint blueprint,
+            int cols, int rows, java.util.Set<String> addedPositions) {
+        if (blueprint == null) {
+            return false;
         }
 
-        InputManager input = context.getInput();
+        int column = blueprint.column();
+        int row = blueprint.row();
 
+        // Check if position is within grid bounds
+        if (column < 0 || column >= cols || row < 0 || row >= rows) {
+            System.err.println("Invalid brick position: (" + column + "," + row + ") outside grid bounds [0-"
+                    + (cols - 1) + ", 0-" + (rows - 1) + "]");
+            return false;
+        }
+
+        // Check for duplicate position
+        String positionKey = column + "," + row;
+        if (addedPositions.contains(positionKey)) {
+            System.err.println("Duplicate brick detected at position (" + column + "," + row + ")");
+            return false;
+        }
+
+        // Mark position as occupied
+        addedPositions.add(positionKey);
+        return true;
+    }
+
+    /**
+     * Factory method to create a brick from blueprint.
+     */
+    private Brick createBrick(LevelDefinition.BrickBlueprint blueprint,
+            double brickWidth, double brickHeight, double gap, double horizontalPadding, double verticalPadding) {
+        int column = blueprint.column();
+        int row = blueprint.row();
+        double x = horizontalPadding + column * (brickWidth + gap);
+        double y = verticalPadding + row * (brickHeight + gap);
+        int hitPoints = Math.max(1, blueprint.hitPoints());
+        int scoreValue = 50 * hitPoints;
+
+        return new Brick(x, y, brickWidth, brickHeight, hitPoints, scoreValue,
+                column, row, blueprint.brickType(), blueprint.tags(), blueprint.modifiers());
+    }
+
+    @Override
+    public void update(double deltaTime) {
+        if (paused)
+            return;
+
+        InputManager input = context.getInput();
         if (input.isKeyJustPressed(KeyEvent.VK_ESCAPE)) {
             pauseGame();
             return;
@@ -264,16 +339,31 @@ public class GameplayScene extends Scene {
             return;
         }
 
-        handleMovementInput(input);
+        updateGameplay(input, deltaTime);
+        objectiveEngine.update(deltaTime);
 
+        if (!gameOver && !stageCleared && isLevelComplete()) {
+            handleLevelCompletion();
+        }
+    }
+
+    /**
+     * Factory method to update gameplay mechanics.
+     */
+    private void updateGameplay(InputManager input, double deltaTime) {
+        handleMovementInput(input);
         paddle.update(deltaTime);
-        paddle.clamp(0, context.getConfig().width());
+
+        // Clamp paddle within the neon dot border boundaries
+        int width = context.getConfig().width();
+        double leftBoundary = visualEffects.getLeftBound();
+        double rightBoundary = visualEffects.getRightBound(width);
+        paddle.clamp(leftBoundary, rightBoundary);
 
         if (awaitingLaunch) {
             attachBallToPaddle();
-            if (input.isKeyJustPressed(KeyEvent.VK_SPACE)) {
+            if (input.isKeyJustPressed(KeyEvent.VK_SPACE))
                 launchBall();
-            }
         } else {
             updateBalls(deltaTime);
         }
@@ -363,10 +453,7 @@ public class GameplayScene extends Scene {
     }
 
     private boolean isLevelComplete() {
-        if (objectiveEngine.arePrimaryObjectivesMet()) {
-            return true;
-        }
-        return bricks.stream().allMatch(Brick::isDestroyed);
+        return objectiveEngine.arePrimaryObjectivesMet() || bricks.stream().allMatch(Brick::isDestroyed);
     }
 
     private void handleGameOverInput(InputManager input) {
@@ -476,11 +563,10 @@ public class GameplayScene extends Scene {
         double vx = ballRef.getVelocity().x;
         double vy = ballRef.getVelocity().y;
         double length = Math.sqrt(vx * vx + vy * vy);
-        if (length == 0) {
-            return;
+        if (length != 0) {
+            double scale = currentBallSpeed / length;
+            ballRef.setVelocity(vx * scale, vy * scale);
         }
-        double scale = currentBallSpeed / length;
-        ballRef.setVelocity(vx * scale, vy * scale);
     }
 
     private void handlePaddleCollision(Ball ballRef) {
@@ -501,7 +587,7 @@ public class GameplayScene extends Scene {
     private void handleBrickCollisions(Ball ballRef) {
         Rectangle2D ballBounds = ballRef.getBounds();
         for (Brick brick : bricks) {
-            if (brick.isDestroyed()) {
+            if (brick.isDestroyed())
                 continue;
             }
             Rectangle2D brickBounds = brick.getBounds();
@@ -602,29 +688,52 @@ public class GameplayScene extends Scene {
     }
 
     private void handleLevelCompletion() {
-        if (stageCleared) {
+        if (stageCleared)
             return;
-        }
+
         stageCleared = true;
         awaitingLaunch = true;
         PlayerProfile profile = context.getProfileManager().getActiveProfile();
-        profile.markLevelCompleted(activeLevel.id());
-        context.getProfileManager().saveProfile();
-        profile.unlockLevel(activeLevel.id());
+
+        updateProfileProgress(profile);
+
         if (levelManager.hasNext()) {
-            levelManager.advance();
-            LevelDefinition nextLevel = levelManager.current();
-            profile.unlockLevel(nextLevel.id());
-            profile.setCurrentLevelId(nextLevel.id());
-            context.getProfileManager().saveProfile();
-            loadLevel();
-            statusMessage = localization.translate("gameplay.message.stageCleared");
+            advanceToNextLevel(profile);
         } else {
-            profile.setCurrentLevelId(activeLevel.id());
-            context.getProfileManager().saveProfile();
-            gameOver = true;
-            statusMessage = localization.translate("gameplay.message.victory");
+            completeAllLevels(profile);
         }
+    }
+
+    /**
+     * Factory method to update profile progress.
+     */
+    private void updateProfileProgress(PlayerProfile profile) {
+        profile.markLevelCompleted(activeLevel.id());
+        profile.unlockLevel(activeLevel.id());
+        context.getProfileManager().saveProfile();
+    }
+
+    /**
+     * Factory method to advance to next level.
+     */
+    private void advanceToNextLevel(PlayerProfile profile) {
+        levelManager.advance();
+        LevelDefinition nextLevel = levelManager.current();
+        profile.unlockLevel(nextLevel.id());
+        profile.setCurrentLevelId(nextLevel.id());
+        context.getProfileManager().saveProfile();
+        loadLevel();
+        statusMessage = localization.translate("gameplay.message.stageCleared");
+    }
+
+    /**
+     * Factory method to handle game completion.
+     */
+    private void completeAllLevels(PlayerProfile profile) {
+        profile.setCurrentLevelId(activeLevel.id());
+        context.getProfileManager().saveProfile();
+        gameOver = true;
+        statusMessage = localization.translate("gameplay.message.victory");
     }
 
     private void loseLife() {
@@ -647,7 +756,58 @@ public class GameplayScene extends Scene {
         resetBall();
     }
 
-    private final class SceneObjectiveListener implements ObjectiveEngine.Listener {
+    @Override
+    public void render(Graphics2D graphics) {
+        int width = context.getConfig().width();
+        int height = context.getConfig().height();
+
+        drawBackground(graphics);
+        visualEffects.drawGameAreaBorder(graphics, width, height);
+        renderGameElements(graphics);
+        renderStatusMessage(graphics);
+    }
+
+    /**
+     * Factory method to render all game elements.
+     */
+    private void renderGameElements(Graphics2D graphics) {
+        int width = context.getConfig().width();
+        int height = context.getConfig().height();
+        panelRenderer.render(graphics, width, height, score, lives, activeLevel, objectiveEngine.snapshot());
+
+        bricks.forEach(brick -> brick.render(graphics));
+        paddle.render(graphics);
+        ball.render(graphics);
+        powerUps.forEach(powerUp -> powerUp.render(graphics));
+    }
+
+    /**
+     * Factory method to render status messages.
+     */
+    private void renderStatusMessage(Graphics2D graphics) {
+        if (!paused && (awaitingLaunch || gameOver || !statusMessage.isEmpty())) {
+            String message = statusMessage.isEmpty() ? localization.translate("gameplay.prompt.launch") : statusMessage;
+            hudRenderer.renderCenterMessage(graphics, message,
+                    context.getConfig().width(), context.getConfig().height());
+        }
+    }
+
+    private void drawBackground(Graphics2D graphics) {
+        graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+        // Draw background image if available
+        if (backgroundImage != null) {
+            int width = context.getConfig().width();
+            int height = context.getConfig().height();
+            graphics.drawImage(backgroundImage, 0, 0, width, height, null);
+        } else {
+            // Fallback to solid color
+            graphics.setColor(new Color(18, 18, 30));
+            graphics.fillRect(0, 0, context.getConfig().width(), context.getConfig().height());
+        }
+    }
+
+    private static class SceneObjectiveListener implements ObjectiveEngine.Listener {
         @Override
         public void onObjectiveProgress(ObjectiveEngine.ObjectiveState state) {
         }

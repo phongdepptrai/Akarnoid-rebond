@@ -4,11 +4,19 @@ import com.arcade.arkanoid.engine.assets.AssetManager;
 import com.arcade.arkanoid.engine.audio.SoundManager;
 import com.arcade.arkanoid.engine.input.InputManager;
 import com.arcade.arkanoid.engine.scene.SceneManager;
+import com.arcade.arkanoid.engine.util.IOThreadPool;
 import com.arcade.arkanoid.economy.EconomyService;
 import com.arcade.arkanoid.engine.settings.SettingsManager;
 import com.arcade.arkanoid.localization.LocalizationService;
 import com.arcade.arkanoid.profile.ProfileManager;
 
+/**
+ * Base Game class with 4-thread architecture:
+ * 1. Main Thread (UI/EDT) - Graphics & Input
+ * 2. Game Loop Thread (60 FPS) - Update & Collision
+ * 3. Audio Thread Pool - Sound effects & Background music
+ * 4. I/O Thread - Save/Load & Resource loading
+ */
 public abstract class Game {
     private final GameConfig config;
     private final GameWindow window;
@@ -45,8 +53,7 @@ public abstract class Game {
                 profileManager,
                 economyService,
                 settingsManager,
-                localizationService
-        );
+                localizationService);
         this.window.attachInputListeners(inputManager);
         this.sceneManager.bindContext(context);
         registerScenes(sceneManager);
@@ -60,7 +67,13 @@ public abstract class Game {
     }
 
     public void stop() {
+        // Save profile synchronously before shutdown
+        profileManager.saveProfileSync();
+
+        // Shutdown all threads
         loop.stop();
+        soundManager.dispose();
+        IOThreadPool.getInstance().shutdown();
         window.dispose();
     }
 

@@ -16,6 +16,8 @@
   "menu.dailyBonus.next": "Next bonus in {0}",
   "menu.hint.navigate": "Use arrow keys or WASD to navigate. Enter to select.",
   "menu.hint.pause": "Press ESC anytime during the game to pause.",
+  "menu.hint.profile": "Press P to view your profile and stats.",
+  "menu.hint.tutorial": "Press T to view the tutorial.",
   "worldMap.instructions": "Left/Right to navigate, Enter to start level, ESC to menu.",
   "worldMap.noLives": "No lives remaining. Come back later or claim a bonus.",
   "worldMap.locked": "Clear previous level to unlock.",
