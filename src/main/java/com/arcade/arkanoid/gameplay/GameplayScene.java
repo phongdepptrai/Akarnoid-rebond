@@ -6,6 +6,7 @@ import com.arcade.arkanoid.engine.core.GameContext;
 import com.arcade.arkanoid.engine.input.InputManager;
 import com.arcade.arkanoid.engine.scene.Scene;
 import com.arcade.arkanoid.engine.audio.SoundManager;
+import com.arcade.arkanoid.engine.audio.StageMusicManager;
 import com.arcade.arkanoid.gameplay.entities.Ball;
 import com.arcade.arkanoid.gameplay.entities.Brick;
 import com.arcade.arkanoid.gameplay.entities.Paddle;
@@ -73,7 +74,6 @@ public class GameplayScene extends Scene {
     private boolean initialized = false;
     private boolean stageCleared = false;
     private boolean gameOver = false;
-    private boolean musicPlaying = false;
     private String statusMessage = "";
     private LevelDefinition activeLevel;
     private final LocalizationService localization;
@@ -99,10 +99,11 @@ public class GameplayScene extends Scene {
         paused = false;
         statusMessage = "";
 
-        // Play stage music
-        soundManager.load("stage", "/sounds/stage.mp3");
-        soundManager.loop("stage");
-        musicPlaying = true;
+        // Load sound effects
+        soundManager.load("brick_hit", "/sounds/brick.mp3");
+
+        // Play stage music using Singleton
+        StageMusicManager.getInstance().playStageMusic("stage", "/sounds/stage.mp3");
     }
 
     /**
@@ -130,20 +131,12 @@ public class GameplayScene extends Scene {
 
     public void resumeFromPause() {
         paused = false;
-        // Only resume music if it was playing before
-        if (!musicPlaying) {
-            soundManager.loop("stage");
-            musicPlaying = true;
-        }
+        StageMusicManager.getInstance().resume();
     }
 
     public void pauseGame() {
         paused = true;
-        // Stop stage music when pausing
-        if (musicPlaying) {
-            soundManager.stop("stage");
-            musicPlaying = false;
-        }
+        StageMusicManager.getInstance().pause();
         PauseScene pauseScene = (PauseScene) context.getScenes().getPersistentScene(ArkanoidGame.SCENE_PAUSE);
         if (pauseScene != null) {
             pauseScene.bindGameplay(this);
@@ -501,8 +494,7 @@ public class GameplayScene extends Scene {
         }
         if (input.isKeyJustPressed(KeyEvent.VK_ESCAPE)) {
             // Stop stage music before returning to menu
-            soundManager.stop("stage");
-            musicPlaying = false;
+            StageMusicManager.getInstance().stop();
             context.getScenes().switchTo(ArkanoidGame.SCENE_MENU);
         }
     }
@@ -651,6 +643,7 @@ public class GameplayScene extends Scene {
                     }
                 }
                 brick.hit();
+                soundManager.play("brick_hit"); // Play sound effect when hitting brick
                 if (ballRef.isFireActive()) {
                     while (!brick.isDestroyed()) {
                         brick.hit();
@@ -745,8 +738,7 @@ public class GameplayScene extends Scene {
         awaitingLaunch = true;
 
         // Stop stage music when level is completed
-        soundManager.stop("stage");
-        musicPlaying = false;
+        StageMusicManager.getInstance().stop();
 
         PlayerProfile profile = context.getProfileManager().getActiveProfile();
 
@@ -790,8 +782,7 @@ public class GameplayScene extends Scene {
         gameOver = true;
 
         // Stop stage music when game is completed
-        soundManager.stop("stage");
-        musicPlaying = false;
+        StageMusicManager.getInstance().stop();
 
         statusMessage = localization.translate("gameplay.message.victory");
     }
