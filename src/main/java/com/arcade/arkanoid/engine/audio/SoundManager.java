@@ -1,9 +1,5 @@
 package com.arcade.arkanoid.engine.audio;
 
-import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.Clip;
-import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -11,10 +7,12 @@ import java.util.concurrent.Executors;
 
 /**
  * Sound manager with dedicated Audio Thread Pool.
- * Architecture: Async audio playback on separate threads.
+ * Architecture: Uses Adapter Pattern to support multiple audio formats (WAV,
+ * MP3).
+ * Uses Factory Pattern to create appropriate audio players.
  */
 public class SoundManager {
-    private final Map<String, Clip> clips = new HashMap<>();
+    private final Map<String, AudioPlayer> players = new HashMap<>();
     private final ExecutorService audioThreadPool;
 
     public SoundManager() {
@@ -26,21 +24,21 @@ public class SoundManager {
         });
     }
 
+    /**
+     * Loads an audio file using the appropriate adapter.
+     * 
+     * @param id           unique identifier for the audio
+     * @param resourcePath path to the audio resource
+     */
     public void load(String id, String resourcePath) {
-        if (clips.containsKey(id)) {
+        if (players.containsKey(id)) {
             return;
         }
+
         try {
-            URL url = getClass().getResource(resourcePath);
-            if (url == null) {
-                System.err.println("Sound resource not found: " + resourcePath);
-                return;
-            }
-            try (AudioInputStream stream = AudioSystem.getAudioInputStream(url)) {
-                Clip clip = AudioSystem.getClip();
-                clip.open(stream);
-                clips.put(id, clip);
-            }
+            // Use Factory Pattern to create appropriate adapter
+            AudioPlayer player = AudioPlayerFactory.createPlayer(resourcePath);
+            players.put(id, player);
         } catch (Exception e) {
             System.err.println("Unable to load sound " + resourcePath + ": " + e.getMessage());
         }
@@ -51,16 +49,9 @@ public class SoundManager {
      */
     public void play(String id) {
         audioThreadPool.submit(() -> {
-            Clip clip = clips.get(id);
-            if (clip == null)
-                return;
-
-            synchronized (clip) {
-                if (clip.isRunning()) {
-                    clip.stop();
-                }
-                clip.setFramePosition(0);
-                clip.start();
+            AudioPlayer player = players.get(id);
+            if (player != null) {
+                player.play();
             }
         });
     }
@@ -70,12 +61,9 @@ public class SoundManager {
      */
     public void loop(String id) {
         audioThreadPool.submit(() -> {
-            Clip clip = clips.get(id);
-            if (clip == null)
-                return;
-
-            synchronized (clip) {
-                clip.loop(Clip.LOOP_CONTINUOUSLY);
+            AudioPlayer player = players.get(id);
+            if (player != null) {
+                player.loop();
             }
         });
     }
@@ -85,18 +73,19 @@ public class SoundManager {
      */
     public void stop(String id) {
         audioThreadPool.submit(() -> {
-            Clip clip = clips.get(id);
-            if (clip != null && clip.isRunning()) {
-                synchronized (clip) {
-                    clip.stop();
-                }
+            AudioPlayer player = players.get(id);
+            if (player != null) {
+                player.stop();
             }
         });
     }
 
+    /**
+     * Disposes all audio resources and shuts down the thread pool.
+     */
     public void dispose() {
         audioThreadPool.shutdown();
-        clips.values().forEach(Clip::close);
-        clips.clear();
+        players.values().forEach(AudioPlayer::dispose);
+        players.clear();
     }
 }

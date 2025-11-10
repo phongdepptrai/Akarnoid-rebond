@@ -5,6 +5,7 @@ import com.arcade.arkanoid.engine.core.GameContext;
 import com.arcade.arkanoid.engine.assets.AssetManager;
 import com.arcade.arkanoid.engine.input.InputManager;
 import com.arcade.arkanoid.engine.scene.Scene;
+import com.arcade.arkanoid.engine.audio.BackgroundMusicManager;
 import com.arcade.arkanoid.gameplay.GameplayScene;
 import com.arcade.arkanoid.gameplay.levels.LevelDefinition;
 import com.arcade.arkanoid.gameplay.levels.LevelManager;
@@ -25,13 +26,14 @@ import java.util.List;
 import java.util.Random;
 
 /**
- * Overworld map scene with linear progression. Nodes unlock sequentially and optional gates display requirements.
+ * Overworld map scene with linear progression. Nodes unlock sequentially and
+ * optional gates display requirements.
  */
 public class WorldMapScene extends Scene {
     private final LevelManager levelManager = new LevelManager();
     private final List<LevelNode> nodes = new ArrayList<>();
-    private final Font nodeFont = new Font("Orbitron", Font.BOLD, 20);
-    private final Font infoFont = new Font("SansSerif", Font.PLAIN, 18);
+    private final Font nodeFont = new Font("emulogic", Font.PLAIN, 12);
+    private final Font infoFont = new Font("emulogic", Font.PLAIN, 9);
     private final LocalizationService localization;
     private final List<Star> starField = new ArrayList<>();
     private final Random random = new Random();
@@ -66,6 +68,14 @@ public class WorldMapScene extends Scene {
         mapTargetOffset = 0.0;
         updateSelection(selectedIndex);
         mapOffset = mapTargetOffset;
+
+        // Start background music using singleton
+        BackgroundMusicManager.getInstance().playTheme("menu_theme", "/sounds/theme_song.mp3");
+    }
+
+    @Override
+    public void onExit() {
+        // Music will continue playing when switching between menu scenes
     }
 
     @Override
@@ -162,6 +172,9 @@ public class WorldMapScene extends Scene {
         levelManager.resetToLevel(node.getLevelDefinition().id());
         GameplayScene gameplay = (GameplayScene) context.getScenes().getPersistentScene(ArkanoidGame.SCENE_GAMEPLAY);
         if (gameplay != null) {
+            // Stop background music before entering gameplay
+            BackgroundMusicManager.getInstance().stopTheme();
+
             gameplay.beginNewSession();
             context.getScenes().switchTo(ArkanoidGame.SCENE_GAMEPLAY);
         } else {
@@ -189,8 +202,7 @@ public class WorldMapScene extends Scene {
                         baseX - pulse,
                         baseY - pulse,
                         width + pulse * 2,
-                        height + pulse * 2
-                );
+                        height + pulse * 2);
                 graphics.setColor(new Color(255, 255, 255, 40));
                 graphics.fill(halo);
             }
@@ -208,11 +220,11 @@ public class WorldMapScene extends Scene {
             graphics.fill(circle);
 
             graphics.setStroke(new BasicStroke(i == selectedIndex ? 6 : 3));
-            graphics.setColor(i == selectedIndex ? Color.WHITE : new Color(30, 30, 40));
+            graphics.setColor(Color.WHITE);
             graphics.draw(circle);
 
             graphics.setFont(nodeFont);
-            graphics.setColor(Color.BLACK);
+            graphics.setColor(Color.WHITE);
             String label = node.getLevelDefinition().displayName();
             int textWidth = graphics.getFontMetrics().stringWidth(label);
             int textX = (int) (baseX + (width - textWidth) / 2);
@@ -243,7 +255,8 @@ public class WorldMapScene extends Scene {
             int y1 = from.getBounds().y + from.getBounds().height / 2;
             int x2 = (int) (to.getBounds().x + to.getBounds().width / 2 - mapOffset);
             int y2 = to.getBounds().y + to.getBounds().height / 2;
-            if ((x1 < -100 && x2 < -100) || (x1 > context.getConfig().width() + 100 && x2 > context.getConfig().width() + 100)) {
+            if ((x1 < -100 && x2 < -100)
+                    || (x1 > context.getConfig().width() + 100 && x2 > context.getConfig().width() + 100)) {
                 continue;
             }
             graphics.drawLine(x1, y1, x2, y2);
@@ -254,9 +267,11 @@ public class WorldMapScene extends Scene {
         PlayerProfile profile = context.getProfileManager().getActiveProfile();
         graphics.setFont(infoFont);
         graphics.setColor(Color.WHITE);
-        graphics.drawString(localization.translate("worldMap.label.lives", profile.getLives(), profile.getMaxLives()), 40, 60);
+        graphics.drawString(localization.translate("worldMap.label.lives", profile.getLives(), profile.getMaxLives()),
+                40, 60);
         graphics.drawString(localization.translate("worldMap.label.coins", profile.getCoins()), 40, 90);
-        graphics.drawString(localization.translate("worldMap.label.energy", profile.getEnergy(), profile.getMaxEnergy()), 40, 120);
+        graphics.drawString(
+                localization.translate("worldMap.label.energy", profile.getEnergy(), profile.getMaxEnergy()), 40, 120);
         graphics.drawString(localization.translate("worldMap.label.streak", profile.getDailyStreak()), 40, 150);
 
         if (statusMessage != null && !statusMessage.isBlank()) {
@@ -334,4 +349,5 @@ public class WorldMapScene extends Scene {
         double phase;
         float baseAlpha;
     }
+
 }

@@ -36,21 +36,21 @@
   ],
   "objectives": [
     {
-      "id": "unlock-canes",
+      "id": "UNLOCK CANES",
       "type": "clear-tagged-bricks",
       "target": { "amount": 4, "trackedTags": ["blocker:lock"] },
       "optional": false,
       "tags": ["primary", "blocker-clear"]
     },
     {
-      "id": "clear-stripes",
+      "id": "CLEAR STRIPES",
       "type": "clear-tagged-bricks",
       "target": { "amount": 12, "trackedTags": ["color:red"] },
       "optional": false,
       "tags": ["primary", "color-clear"]
     },
     {
-      "id": "score-1000",
+      "id": "SCORE 1000",
       "type": "score",
       "target": { "amount": 1000 },
       "optional": true,

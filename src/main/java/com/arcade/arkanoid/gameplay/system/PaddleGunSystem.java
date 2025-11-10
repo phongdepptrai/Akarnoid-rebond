@@ -13,7 +13,8 @@ import java.util.List;
 import java.util.function.Consumer;
 
 /**
- * Encapsulates paddle-mounted weapon behaviour, including bullet lifecycle and rendering.
+ * Encapsulates paddle-mounted weapon behaviour, including bullet lifecycle and
+ * rendering.
  */
 public final class PaddleGunSystem {
     private static final double DEFAULT_DURATION_SECONDS = 8.0;

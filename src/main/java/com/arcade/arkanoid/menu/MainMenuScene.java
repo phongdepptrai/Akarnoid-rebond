@@ -7,6 +7,7 @@ import com.arcade.arkanoid.engine.scene.Scene;
 import com.arcade.arkanoid.engine.util.FontLoader;
 import com.arcade.arkanoid.engine.util.GradientUtils;
 import com.arcade.arkanoid.engine.assets.AssetManager;
+import com.arcade.arkanoid.engine.audio.BackgroundMusicManager;
 import com.arcade.arkanoid.gameplay.GameplayScene;
 import com.arcade.arkanoid.economy.EconomyService;
 import com.arcade.arkanoid.localization.LocalizationService;
@@ -90,7 +91,7 @@ public class MainMenuScene extends Scene {
         tutorialIcon = assets.getImage("tutorial_icon");
         economy.claimDailyBonus();
 
-        // Cache title and subtitle rendering once for performance
+        BackgroundMusicManager.getInstance().playTheme("menu_theme", "/sounds/theme_song.mp3");
         createCachedTitles();
 
         GameplayScene gameplay = (GameplayScene) context.getScenes().getPersistentScene(ArkanoidGame.SCENE_GAMEPLAY);
@@ -100,6 +101,10 @@ public class MainMenuScene extends Scene {
                         MenuAction.EXIT }
                 : new MenuAction[] { MenuAction.WORLD_MAP, MenuAction.SHOP, MenuAction.SAVE_SLOTS, MenuAction.EXIT };
         selectedIndex = 0;
+    }
+
+    @Override
+    public void onExit() {
     }
 
     @Override
@@ -150,6 +155,7 @@ public class MainMenuScene extends Scene {
                 break;
             case RESUME:
                 if (gameplay != null && gameplay.isSessionActive()) {
+                    BackgroundMusicManager.getInstance().stopTheme();
                     context.getScenes().switchTo(ArkanoidGame.SCENE_GAMEPLAY);
                 }
                 break;
@@ -308,10 +314,8 @@ public class MainMenuScene extends Scene {
 
         graphics.setFont(hintFont);
         graphics.setColor(new Color(190, 190, 190));
-        graphics.drawString(localization.translate("menu.hint.navigate"), 40, context.getConfig().height() - 90);
-        graphics.drawString(localization.translate("menu.hint.pause"), 40, context.getConfig().height() - 60);
         graphics.drawString(localization.translate("menu.hint.profile"), 40, context.getConfig().height() - 30);
-        graphics.drawString(localization.translate("menu.hint.tutorial"), 40, context.getConfig().height() - 120);
+        graphics.drawString(localization.translate("menu.hint.tutorial"), 40, context.getConfig().height() - 60);
     }
 
     /**

@@ -4,6 +4,7 @@ import com.arcade.arkanoid.ArkanoidGame;
 import com.arcade.arkanoid.engine.core.GameContext;
 import com.arcade.arkanoid.engine.input.InputManager;
 import com.arcade.arkanoid.engine.scene.Scene;
+import com.arcade.arkanoid.engine.audio.BackgroundMusicManager;
 import com.arcade.arkanoid.economy.EconomyService;
 import com.arcade.arkanoid.gameplay.cosmetics.SkinCatalog;
 import com.arcade.arkanoid.localization.LocalizationService;
@@ -47,7 +48,7 @@ public class ShopScene extends Scene {
         }
 
         ShopItem(String id, ItemType type, int price, String nameKey, String descriptionKey,
-                 int rewardCoins, int rewardLives, int rewardEnergy) {
+                int rewardCoins, int rewardLives, int rewardEnergy) {
             this.id = id;
             this.type = type;
             this.price = price;
@@ -88,8 +89,7 @@ public class ShopScene extends Scene {
     private final List<CategoryEntry> categories = Arrays.asList(
             new CategoryEntry(ViewMode.PADDLE, "shop.category.paddle"),
             new CategoryEntry(ViewMode.BALL, "shop.category.ball"),
-            new CategoryEntry(ViewMode.BUFF, "shop.category.buff")
-    );
+            new CategoryEntry(ViewMode.BUFF, "shop.category.buff"));
     private final List<ShopItem> paddleItems = new ArrayList<>();
     private final List<ShopItem> ballItems = new ArrayList<>();
     private final List<ShopItem> buffItems = new ArrayList<>();
@@ -136,6 +136,14 @@ public class ShopScene extends Scene {
     public void onEnter() {
         statusMessage = "";
         setView(ViewMode.CATEGORY);
+
+        // Start background music using singleton
+        BackgroundMusicManager.getInstance().playTheme("menu_theme", "/sounds/theme_song.mp3");
+    }
+
+    @Override
+    public void onExit() {
+        // Music will continue playing when switching between menu scenes
     }
 
     @Override
@@ -277,7 +285,9 @@ public class ShopScene extends Scene {
 
         graphics.setFont(sectionFont);
         graphics.setColor(new Color(200, 220, 255));
-        graphics.drawString(localization.translate("shop.coins", context.getProfileManager().getActiveProfile().getCoins()), 50, 160);
+        graphics.drawString(
+                localization.translate("shop.coins", context.getProfileManager().getActiveProfile().getCoins()), 50,
+                160);
 
         if (viewMode == ViewMode.CATEGORY) {
             renderCategoryMenu(graphics);
@@ -373,17 +383,15 @@ public class ShopScene extends Scene {
             case BUFF:
                 graphics.setColor(new Color(255, 214, 0, 200));
                 graphics.fillPolygon(
-                        new int[]{previewX + 60, previewX + 85, previewX + 70},
-                        new int[]{previewY, previewY + 18, previewY + 50},
-                        3
-                );
+                        new int[] { previewX + 60, previewX + 85, previewX + 70 },
+                        new int[] { previewY, previewY + 18, previewY + 50 },
+                        3);
                 graphics.setColor(new Color(255, 255, 255, 220));
                 graphics.setStroke(new BasicStroke(3));
                 graphics.drawPolygon(
-                        new int[]{previewX + 60, previewX + 85, previewX + 70},
-                        new int[]{previewY, previewY + 18, previewY + 50},
-                        3
-                );
+                        new int[] { previewX + 60, previewX + 85, previewX + 70 },
+                        new int[] { previewY, previewY + 18, previewY + 50 },
+                        3);
                 break;
             default:
                 break;
@@ -415,7 +423,7 @@ public class ShopScene extends Scene {
     }
 
     private void drawOwnershipDetails(Graphics2D graphics, boolean owned, boolean equipped,
-                                      ShopItem item, int x, int width, int y) {
+            ShopItem item, int x, int width, int y) {
         if (owned) {
             graphics.setColor(equipped ? new Color(129, 199, 132) : new Color(224, 224, 224));
             String labelKey = equipped ? "shop.status.equipped" : "shop.status.owned";

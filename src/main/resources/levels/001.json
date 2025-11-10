@@ -1,6 +1,6 @@
 {
   "id": "001",
-  "displayName": "Sugar Glass Plains",
+  "displayName": "Sugar Plains",
   "description": "Break the candy crust and rack up points before the sugar rush ends.",
   "difficulty": "STORY",
   "board": {
@@ -126,7 +126,7 @@
   ],
   "objectives": [
     {
-      "id": "clear-red-bricks",
+      "id": "CLEAR RED BRICKS",
       "type": "clear-tagged-bricks",
       "target": {
         "amount": 6,
@@ -136,7 +136,7 @@
       "tags": ["primary", "color-clear"]
     },
     {
-      "id": "reach-score-600",
+      "id": "REACH SCORE 600",
       "type": "score",
       "target": {
         "amount": 600
@@ -145,7 +145,7 @@
       "tags": ["primary", "score"]
     },
     {
-      "id": "clear-blue-bonus",
+      "id": "CLEAR BLUE BONUS",
       "type": "clear-tagged-bricks",
       "target": {
         "amount": 4,

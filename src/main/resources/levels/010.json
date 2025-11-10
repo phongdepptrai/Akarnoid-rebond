@@ -1,6 +1,6 @@
 {
   "id": "010",
-  "displayName": "Marshmallow Marsh",
+  "displayName": "Mallow Marsh",
   "description": "Dry out the marshmallows and burst the bubble clouds before they respawn.",
   "difficulty": "STORY",
   "board": {
@@ -36,21 +36,21 @@
   ],
   "objectives": [
     {
-      "id": "dry-marsh",
+      "id": "DRY MARSH",
       "type": "clear-tagged-bricks",
       "target": { "amount": 12, "trackedTags": ["color:yellow"] },
       "optional": false,
       "tags": ["primary", "color-clear"]
     },
     {
-      "id": "burst-clouds",
+      "id": "BURST CLOUDS",
       "type": "clear-tagged-bricks",
       "target": { "amount": 4, "trackedTags": ["blocker:jelly"] },
       "optional": false,
       "tags": ["primary", "blocker-clear"]
     },
     {
-      "id": "halt-spawners",
+      "id": "HALT SPAWNERS",
       "type": "clear-tagged-bricks",
       "target": { "amount": 4, "trackedTags": ["blocker:spawner"] },
       "optional": true,

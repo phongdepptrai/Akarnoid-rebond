@@ -410,7 +410,7 @@
   ],
   "objectives": [
     {
-      "id": "pulse-harvest",
+      "id": "PULSE HARVEST",
       "type": "clear-tagged-bricks",
       "target": {
         "amount": 18,
@@ -425,7 +425,7 @@
       ]
     },
     {
-      "id": "rupture-armor",
+      "id": "RUPTURE ARMOR",
       "type": "clear-tagged-bricks",
       "target": {
         "amount": 2,
@@ -440,7 +440,7 @@
       ]
     },
     {
-      "id": "stop-slime",
+      "id": "STOP SLIME",
       "type": "clear-tagged-bricks",
       "target": {
         "amount": 2,

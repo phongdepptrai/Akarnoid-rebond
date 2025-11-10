@@ -4,6 +4,7 @@ import com.arcade.arkanoid.ArkanoidGame;
 import com.arcade.arkanoid.engine.core.GameContext;
 import com.arcade.arkanoid.engine.scene.Scene;
 import com.arcade.arkanoid.engine.input.InputManager;
+import com.arcade.arkanoid.engine.audio.BackgroundMusicManager;
 import com.arcade.arkanoid.profile.PlayerProfile;
 
 import java.awt.*;
@@ -48,6 +49,14 @@ public class ProfileDetailScene extends Scene {
         backgroundImage = context.getAssets().getImage("background");
         backgroundNoPlanets = context.getAssets().getImage("background1");
         animationTime = 0;
+
+        // Start background music using singleton
+        BackgroundMusicManager.getInstance().playTheme("menu_theme", "/sounds/theme_song.mp3");
+    }
+
+    @Override
+    public void onExit() {
+        // Music will continue playing when switching between menu scenes
     }
 
     @Override

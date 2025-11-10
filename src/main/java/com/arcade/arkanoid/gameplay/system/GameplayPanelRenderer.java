@@ -22,7 +22,7 @@ public class GameplayPanelRenderer {
     private static final Font TITLE_FONT = new Font("emulogic", Font.PLAIN, 14);
     private static final Font VALUE_FONT = new Font("emulogic", Font.PLAIN, 20);
     private static final Font SMALL_VALUE_FONT = new Font("emulogic", Font.PLAIN, 16);
-    private static final Font OBJECTIVE_FONT = new Font("emulogic", Font.PLAIN, 10);
+    private static final Font OBJECTIVE_FONT = new Font("emulogic", Font.PLAIN, 8);
 
     // Singleton instance
     private static GameplayPanelRenderer instance;
@@ -219,7 +219,7 @@ public class GameplayPanelRenderer {
      */
     private void drawObjectiveLine(Graphics2D g, int x, int w, int y, ObjectiveEngine.ObjectiveState obj) {
         boolean done = obj.status() == ObjectiveEngine.Status.COMPLETED;
-        String status = (done ? "[X] " : "[..] ") + obj.id();
+        String status = (done ? "[X] " : "[.] ") + obj.id();
         String progress = obj.progress() + "/" + obj.target();
 
         g.setColor(done ? new Color(100, 255, 100) : Color.WHITE);

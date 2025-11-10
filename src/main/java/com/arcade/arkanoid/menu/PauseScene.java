@@ -12,8 +12,8 @@ import java.awt.Graphics2D;
 import java.awt.event.KeyEvent;
 
 public class PauseScene extends Scene {
-    private final Font titleFont = new Font("SansSerif", Font.BOLD, 42);
-    private final Font optionFont = new Font("SansSerif", Font.BOLD, 24);
+    private final Font titleFont = new Font("emulogic", Font.PLAIN, 42);
+    private final Font optionFont = new Font("emulogic", Font.PLAIN, 20);
     private final String[] options = { "Resume", "Restart Level", "Main Menu" };
     private int selected = 0;
     private GameplayScene gameplayScene;

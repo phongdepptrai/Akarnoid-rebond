@@ -1,6 +1,6 @@
 {
   "id": "008",
-  "displayName": "Frosted Summit",
+  "displayName": "Frost Peak",
   "description": "Crack the frosted surface and free the snowflakes caught in the drift.",
   "difficulty": "STORY",
   "board": {
@@ -38,21 +38,21 @@
   ],
   "objectives": [
     {
-      "id": "crack-ice",
+      "id": "CRACK ICE",
       "type": "clear-tagged-bricks",
       "target": { "amount": 8, "trackedTags": ["blocker:jelly"] },
       "optional": false,
       "tags": ["primary", "blocker-clear"]
     },
     {
-      "id": "save-snowflakes",
+      "id": "SAVE SNOWFLAKES",
       "type": "clear-tagged-bricks",
       "target": { "amount": 12, "trackedTags": ["color:blue"] },
       "optional": false,
       "tags": ["primary", "color-clear"]
     },
     {
-      "id": "beat-timer",
+      "id": "BEAT TIMER",
       "type": "score",
       "target": { "amount": 700 },
       "optional": true,

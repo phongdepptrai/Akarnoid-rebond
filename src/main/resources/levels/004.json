@@ -1,6 +1,6 @@
 {
   "id": "004",
-  "displayName": "Caramel Cavern",
+  "displayName": "Caramel Cave",
   "description": "Melt the caramel flow and cut off the gooey spawners before the cave floods.",
   "difficulty": "STORY",
   "board": {
@@ -36,21 +36,21 @@
   ],
   "objectives": [
     {
-      "id": "melt-caramel",
+      "id": "MELT CARAMEL",
       "type": "clear-tagged-bricks",
       "target": { "amount": 10, "trackedTags": ["color:yellow"] },
       "optional": false,
       "tags": ["primary", "color-clear"]
     },
     {
-      "id": "break-jelly",
+      "id": "BREAK JELLY",
       "type": "clear-tagged-bricks",
       "target": { "amount": 3, "trackedTags": ["blocker:jelly"] },
       "optional": false,
       "tags": ["primary", "blocker-clear"]
     },
     {
-      "id": "collect-bombs",
+      "id": "COLLECT BOMBS",
       "type": "clear-tagged-bricks",
       "target": { "amount": 2, "trackedTags": ["blocker:spawner"] },
       "optional": true,

@@ -40,21 +40,21 @@
   ],
   "objectives": [
     {
-      "id": "clear-rainbows",
+      "id": "CLEAR RAINBOWS",
       "type": "clear-tagged-bricks",
       "target": { "amount": 16, "trackedTags": ["color:any"] },
       "optional": false,
       "tags": ["primary", "color-clear"]
     },
     {
-      "id": "stop-sirens",
+      "id": "STOP SIRENS",
       "type": "clear-tagged-bricks",
       "target": { "amount": 2, "trackedTags": ["blocker:spawner"] },
       "optional": false,
       "tags": ["primary", "blocker-clear"]
     },
     {
-      "id": "max-score-1500",
+      "id": "MAX SCORE 1500",
       "type": "score",
       "target": { "amount": 1500 },
       "optional": true,

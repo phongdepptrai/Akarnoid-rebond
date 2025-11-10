@@ -1,6 +1,6 @@
 {
   "id": "005",
-  "displayName": "Licorice Labyrinth",
+  "displayName": "Licorice Maze",
   "description": "Twist through licorice corridors and unlock the peppermint portals.",
   "difficulty": "STORY",
   "board": {
@@ -40,21 +40,21 @@
   ],
   "objectives": [
     {
-      "id": "clear-licorice",
+      "id": "CLEAR LICORICE",
       "type": "clear-tagged-bricks",
       "target": { "amount": 10, "trackedTags": ["color:red"] },
       "optional": false,
       "tags": ["primary", "color-clear"]
     },
     {
-      "id": "open-portals",
+      "id": "OPEN PORTALS",
       "type": "clear-tagged-bricks",
       "target": { "amount": 2, "trackedTags": ["blocker:lock"] },
       "optional": false,
       "tags": ["primary", "blocker-clear"]
     },
     {
-      "id": "gum-cleanup",
+      "id": "GUM CLEANUP",
       "type": "clear-tagged-bricks",
       "target": { "amount": 2, "trackedTags": ["blocker:spawner"] },
       "optional": true,

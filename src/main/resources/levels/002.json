@@ -198,7 +198,7 @@
   ],
   "objectives": [
     {
-      "id": "clear-blue-arc",
+      "id": "CLEAR BLUE ARC",
       "type": "clear-tagged-bricks",
       "target": {
         "amount": 8,
@@ -213,7 +213,7 @@
       ]
     },
     {
-      "id": "unlock-twins",
+      "id": "UNLOCK TWINS",
       "type": "clear-tagged-bricks",
       "target": {
         "amount": 2,
@@ -228,7 +228,7 @@
       ]
     },
     {
-      "id": "gum-tamers",
+      "id": "GUM TAMERS",
       "type": "clear-tagged-bricks",
       "target": {
         "amount": 2,

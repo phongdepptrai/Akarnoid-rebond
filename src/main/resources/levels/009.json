@@ -1,6 +1,6 @@
 {
   "id": "009",
-  "displayName": "Honeycomb Heights",
+  "displayName": "Honeycomb Hill",
   "description": "Harvest the honeycomb layers and free the trapped bees buzzing inside.",
   "difficulty": "STORY",
   "board": {
@@ -36,21 +36,21 @@
   ],
   "objectives": [
     {
-      "id": "harvest-honey",
+      "id": "HARVEST HONEY",
       "type": "clear-tagged-bricks",
       "target": { "amount": 14, "trackedTags": ["color:yellow"] },
       "optional": false,
       "tags": ["primary", "color-clear"]
     },
     {
-      "id": "free-bees",
+      "id": "FREE BEES",
       "type": "clear-tagged-bricks",
       "target": { "amount": 4, "trackedTags": ["blocker:jelly"] },
       "optional": false,
       "tags": ["primary", "blocker-clear"]
     },
     {
-      "id": "collect-nectar",
+      "id": "COLLECT NECTAR",
       "type": "clear-tagged-bricks",
       "target": { "amount": 2, "trackedTags": ["blocker:spawner"] },
       "optional": true,

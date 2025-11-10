@@ -36,7 +36,7 @@
   "gameplay.message.stageCleared": "Stage cleared! Press SPACE to launch.",
   "gameplay.message.victory": "Victory! Press ENTER for a new game or ESC to quit.",
   "gameplay.message.gameOver": "Game over. Press ENTER to restart or ESC for menu.",
-  "gameplay.message.lifeLost": "Life lost! Press SPACE to continue.",
+  "gameplay.message.lifeLost": "Life lost! Press SPACE to continue",
   "gameplay.message.paused": "Paused",
   "gameplay.prompt.launch": "Press SPACE to launch",
   "objective.clear-red-bricks": "Clear red bricks",

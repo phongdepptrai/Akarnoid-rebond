@@ -5,6 +5,7 @@ import com.arcade.arkanoid.engine.assets.AssetManager;
 import com.arcade.arkanoid.engine.core.GameContext;
 import com.arcade.arkanoid.engine.input.InputManager;
 import com.arcade.arkanoid.engine.scene.Scene;
+import com.arcade.arkanoid.engine.audio.SoundManager;
 import com.arcade.arkanoid.gameplay.entities.Ball;
 import com.arcade.arkanoid.gameplay.entities.Brick;
 import com.arcade.arkanoid.gameplay.entities.Paddle;
@@ -16,7 +17,6 @@ import com.arcade.arkanoid.gameplay.objectives.ObjectiveEngine;
 import com.arcade.arkanoid.gameplay.objectives.StandardObjectiveEngine;
 import com.arcade.arkanoid.gameplay.system.GameplayPanelRenderer;
 import com.arcade.arkanoid.gameplay.system.GameplayVisualEffects;
-import com.arcade.arkanoid.gameplay.system.HudRenderer;
 import com.arcade.arkanoid.gameplay.system.PowerUpController;
 import com.arcade.arkanoid.gameplay.system.PaddleGunSystem;
 import com.arcade.arkanoid.localization.LocalizationService;
@@ -51,7 +51,6 @@ public class GameplayScene extends Scene {
     public static final int SIDE_PANEL_WIDTH = GameplayPanelRenderer.getPanelWidth();
 
     private final LevelManager levelManager = new LevelManager();
-    private final HudRenderer hudRenderer;
     private final GameplayPanelRenderer panelRenderer = GameplayPanelRenderer.getInstance();
     private final GameplayVisualEffects visualEffects = GameplayVisualEffects.getInstance();
     private final Random random = new Random();
@@ -63,6 +62,7 @@ public class GameplayScene extends Scene {
     private final ObjectiveEngine.Listener objectiveListener = new SceneObjectiveListener();
     private final PowerUpController powerUpController;
     private final PaddleGunSystem paddleGunSystem = new PaddleGunSystem();
+    private final SoundManager soundManager;
 
     private Paddle paddle;
     private double currentBallSpeed;
@@ -73,6 +73,7 @@ public class GameplayScene extends Scene {
     private boolean initialized = false;
     private boolean stageCleared = false;
     private boolean gameOver = false;
+    private boolean musicPlaying = false;
     private String statusMessage = "";
     private LevelDefinition activeLevel;
     private final LocalizationService localization;
@@ -82,8 +83,8 @@ public class GameplayScene extends Scene {
     public GameplayScene(GameContext context) {
         super(context);
         this.localization = context.getLocalizationService();
-        this.hudRenderer = new HudRenderer(localization);
         this.powerUpController = new PowerUpController(random, POWERUP_DROP_CHANCE, POWERUP_SIZE);
+        this.soundManager = new SoundManager();
     }
 
     @Override
@@ -97,6 +98,11 @@ public class GameplayScene extends Scene {
         }
         paused = false;
         statusMessage = "";
+
+        // Play stage music
+        soundManager.load("stage", "/sounds/stage.mp3");
+        soundManager.loop("stage");
+        musicPlaying = true;
     }
 
     /**
@@ -124,10 +130,20 @@ public class GameplayScene extends Scene {
 
     public void resumeFromPause() {
         paused = false;
+        // Only resume music if it was playing before
+        if (!musicPlaying) {
+            soundManager.loop("stage");
+            musicPlaying = true;
+        }
     }
 
     public void pauseGame() {
         paused = true;
+        // Stop stage music when pausing
+        if (musicPlaying) {
+            soundManager.stop("stage");
+            musicPlaying = false;
+        }
         PauseScene pauseScene = (PauseScene) context.getScenes().getPersistentScene(ArkanoidGame.SCENE_PAUSE);
         if (pauseScene != null) {
             pauseScene.bindGameplay(this);
@@ -416,14 +432,12 @@ public class GameplayScene extends Scene {
 
             // Render center messages
             String message = null;
-            if (paused) {
-                message = localization.translate("gameplay.message.paused");
-            } else if (!statusMessage.isBlank()) {
+            if (!statusMessage.isBlank()) {
                 message = statusMessage;
             }
 
             if (message != null && !message.isBlank()) {
-                hudRenderer.renderCenterMessage(g2, message, canvasWidth, canvasHeight);
+                renderCenterMessage(g2, message, canvasWidth, canvasHeight);
             } else if (awaitingLaunch && !gameOver && !paused) {
                 renderLaunchPrompt(g2, canvasWidth, canvasHeight);
             }
@@ -448,6 +462,17 @@ public class GameplayScene extends Scene {
         for (Ball ball : balls) {
             ball.render(graphics);
         }
+    }
+
+    private void renderCenterMessage(Graphics2D graphics, String message, int canvasWidth, int canvasHeight) {
+        Font previous = graphics.getFont();
+        graphics.setFont(previous.deriveFont(Font.PLAIN, 25f));
+        graphics.setColor(Color.WHITE);
+        int textWidth = graphics.getFontMetrics().stringWidth(message);
+        int x = (canvasWidth - textWidth) / 2;
+        int y = canvasHeight / 2;
+        graphics.drawString(message, x, y);
+        graphics.setFont(previous);
     }
 
     private void renderLaunchPrompt(Graphics2D graphics, int canvasWidth, int canvasHeight) {
@@ -475,6 +500,9 @@ public class GameplayScene extends Scene {
             return;
         }
         if (input.isKeyJustPressed(KeyEvent.VK_ESCAPE)) {
+            // Stop stage music before returning to menu
+            soundManager.stop("stage");
+            musicPlaying = false;
             context.getScenes().switchTo(ArkanoidGame.SCENE_MENU);
         }
     }
@@ -715,6 +743,11 @@ public class GameplayScene extends Scene {
 
         stageCleared = true;
         awaitingLaunch = true;
+
+        // Stop stage music when level is completed
+        soundManager.stop("stage");
+        musicPlaying = false;
+
         PlayerProfile profile = context.getProfileManager().getActiveProfile();
 
         updateProfileProgress(profile);
@@ -755,6 +788,11 @@ public class GameplayScene extends Scene {
         profile.setCurrentLevelId(activeLevel.id());
         context.getProfileManager().saveProfile();
         gameOver = true;
+
+        // Stop stage music when game is completed
+        soundManager.stop("stage");
+        musicPlaying = false;
+
         statusMessage = localization.translate("gameplay.message.victory");
     }
 
@@ -765,6 +803,10 @@ public class GameplayScene extends Scene {
         if (lives <= 0) {
             balls.clear();
             gameOver = true;
+
+            // Stop stage music when game over
+            soundManager.stop("stage");
+
             statusMessage = localization.translate("gameplay.message.gameOver");
             return;
         }
@@ -785,7 +827,6 @@ public class GameplayScene extends Scene {
 
         @Override
         public void onObjectiveCompleted(ObjectiveEngine.ObjectiveState state) {
-            statusMessage = summarizeObjective("hud.objectiveIndicator.completed", state);
         }
 
         @Override

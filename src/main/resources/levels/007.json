@@ -1,6 +1,6 @@
 {
   "id": "007",
-  "displayName": "Molten Nougat Forge",
+  "displayName": "Nougat Forge",
   "description": "Smelt the armored nougat cores and ignite the forge runes to progress.",
   "difficulty": "STORY",
   "board": {
@@ -34,21 +34,21 @@
   ],
   "objectives": [
     {
-      "id": "shatter-armor",
+      "id": "SHATTER ARMOR",
       "type": "clear-tagged-bricks",
       "target": { "amount": 4, "trackedTags": ["blocker:armored"] },
       "optional": false,
       "tags": ["primary", "blocker-clear"]
     },
     {
-      "id": "ignite-cores",
+      "id": "IGNITE CORES",
       "type": "clear-tagged-bricks",
       "target": { "amount": 8, "trackedTags": ["color:yellow"] },
       "optional": false,
       "tags": ["primary", "color-clear"]
     },
     {
-      "id": "rescue-sparks",
+      "id": "RESCUE SPARKS",
       "type": "clear-tagged-bricks",
       "target": { "amount": 2, "trackedTags": ["blocker:spawner"] },
       "optional": true,

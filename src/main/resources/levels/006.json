@@ -38,21 +38,21 @@
   ],
   "objectives": [
     {
-      "id": "drain-rapids",
+      "id": "DRAIN RAPIDS",
       "type": "clear-tagged-bricks",
       "target": { "amount": 12, "trackedTags": ["color:blue"] },
       "optional": false,
       "tags": ["primary", "color-clear"]
     },
     {
-      "id": "pop-bubbles",
+      "id": "POP BUBBLES",
       "type": "clear-tagged-bricks",
       "target": { "amount": 4, "trackedTags": ["blocker:jelly"] },
       "optional": false,
       "tags": ["primary", "blocker-clear"]
     },
     {
-      "id": "snag-gems",
+      "id": "SNAG GEMS",
       "type": "clear-tagged-bricks",
       "target": { "amount": 2, "trackedTags": ["blocker:spawner"] },
       "optional": true,

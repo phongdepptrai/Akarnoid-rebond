@@ -36,21 +36,21 @@
   ],
   "objectives": [
     {
-      "id": "gather-gumdrops",
+      "id": "GATHER GUMDROPS",
       "type": "clear-tagged-bricks",
       "target": { "amount": 12, "trackedTags": ["color:green"] },
       "optional": false,
       "tags": ["primary", "color-clear"]
     },
     {
-      "id": "double-hits",
+      "id": "DOUBLE HITS",
       "type": "clear-tagged-bricks",
       "target": { "amount": 10, "trackedTags": ["color:purple"] },
       "optional": false,
       "tags": ["primary", "color-clear"]
     },
     {
-      "id": "combo-chain",
+      "id": "COMBO CHAIN",
       "type": "clear-tagged-bricks",
       "target": { "amount": 2, "trackedTags": ["blocker:spawner"] },
       "optional": true,
