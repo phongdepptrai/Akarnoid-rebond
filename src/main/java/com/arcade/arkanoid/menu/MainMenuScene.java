@@ -11,6 +11,7 @@ import com.arcade.arkanoid.engine.audio.BackgroundMusicManager;
 import com.arcade.arkanoid.gameplay.GameplayScene;
 import com.arcade.arkanoid.economy.EconomyService;
 import com.arcade.arkanoid.localization.LocalizationService;
+import com.arcade.arkanoid.engine.settings.SettingsManager;
 import com.arcade.arkanoid.profile.PlayerProfile;
 
 import java.awt.Color;
@@ -34,6 +35,7 @@ public class MainMenuScene extends Scene {
         SHOP,
         RESUME,
         SAVE_SLOTS,
+        SETTINGS,
         EXIT
     }
 
@@ -50,6 +52,7 @@ public class MainMenuScene extends Scene {
 
     private final LocalizationService localization;
     private final EconomyService economy;
+    private final SettingsManager settings;
     private MenuAction[] options = new MenuAction[0];
     private int selectedIndex = 0;
     private BufferedImage backgroundImage;
@@ -72,6 +75,7 @@ public class MainMenuScene extends Scene {
         super(context);
         this.localization = context.getLocalizationService();
         this.economy = context.getEconomyService();
+        this.settings = context.getSettingsManager();
     }
 
     @Override
@@ -91,15 +95,18 @@ public class MainMenuScene extends Scene {
         tutorialIcon = assets.getImage("tutorial_icon");
         economy.claimDailyBonus();
 
-        BackgroundMusicManager.getInstance().playTheme("menu_theme", "/sounds/theme_song.mp3");
+        BackgroundMusicManager musicManager = BackgroundMusicManager.getInstance();
+        musicManager.setVolume(settings.getMusicVolume() / 100f);
+        musicManager.playTheme("menu_theme", "/sounds/theme_song.mp3");
         createCachedTitles();
 
         GameplayScene gameplay = (GameplayScene) context.getScenes().getPersistentScene(ArkanoidGame.SCENE_GAMEPLAY);
         boolean resumeAvailable = gameplay != null && gameplay.isSessionActive();
         options = resumeAvailable
                 ? new MenuAction[] { MenuAction.WORLD_MAP, MenuAction.SHOP, MenuAction.RESUME, MenuAction.SAVE_SLOTS,
-                        MenuAction.EXIT }
-                : new MenuAction[] { MenuAction.WORLD_MAP, MenuAction.SHOP, MenuAction.SAVE_SLOTS, MenuAction.EXIT };
+                        MenuAction.SETTINGS, MenuAction.EXIT }
+                : new MenuAction[] { MenuAction.WORLD_MAP, MenuAction.SHOP, MenuAction.SAVE_SLOTS,
+                        MenuAction.SETTINGS, MenuAction.EXIT };
         selectedIndex = 0;
     }
 
@@ -118,7 +125,6 @@ public class MainMenuScene extends Scene {
         }
 
         if (input.isKeyJustPressed(KeyEvent.VK_T)) {
-            // TODO: Add tutorial scene
             // context.getScenes().switchTo(ArkanoidGame.SCENE_TUTORIAL);
             return;
         }
@@ -162,6 +168,9 @@ public class MainMenuScene extends Scene {
             case SAVE_SLOTS:
                 context.getScenes().switchTo(ArkanoidGame.SCENE_SAVE);
                 break;
+            case SETTINGS:
+                context.getScenes().switchTo(ArkanoidGame.SCENE_SETTINGS);
+                break;
             case EXIT:
                 System.exit(0);
                 break;
@@ -186,6 +195,8 @@ public class MainMenuScene extends Scene {
                 return localization.translate("menu.shop");
             case SAVE_SLOTS:
                 return localization.translate("menu.saveSlots");
+            case SETTINGS:
+                return localization.translate("menu.settings");
             case EXIT:
                 return localization.translate("menu.exit");
             default:

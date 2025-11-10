@@ -14,6 +14,7 @@ import java.util.concurrent.Executors;
 public class SoundManager {
     private final Map<String, AudioPlayer> players = new HashMap<>();
     private final ExecutorService audioThreadPool;
+    private volatile float globalVolume = 1.0f;
 
     public SoundManager() {
         // Audio Thread Pool - for async sound effects and background music
@@ -38,6 +39,7 @@ public class SoundManager {
         try {
             // Use Factory Pattern to create appropriate adapter
             AudioPlayer player = AudioPlayerFactory.createPlayer(resourcePath);
+            player.setVolume(globalVolume);
             players.put(id, player);
         } catch (Exception e) {
             System.err.println("Unable to load sound " + resourcePath + ": " + e.getMessage());
@@ -87,5 +89,22 @@ public class SoundManager {
         audioThreadPool.shutdown();
         players.values().forEach(AudioPlayer::dispose);
         players.clear();
+    }
+
+    public void setGlobalVolume(float volume) {
+        float clamped = clampVolume(volume);
+        globalVolume = clamped;
+        players.values().forEach(player -> player.setVolume(clamped));
+    }
+
+    public float getGlobalVolume() {
+        return globalVolume;
+    }
+
+    private static float clampVolume(float volume) {
+        if (Float.isNaN(volume)) {
+            return 0f;
+        }
+        return Math.max(0f, Math.min(1f, volume));
     }
 }

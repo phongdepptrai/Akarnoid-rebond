@@ -103,7 +103,9 @@ public class GameplayScene extends Scene {
         soundManager.load("brick_hit", "/sounds/brick.mp3");
 
         // Play stage music using Singleton
-        StageMusicManager.getInstance().playStageMusic("stage", "/sounds/stage.mp3");
+        StageMusicManager stageMusic = StageMusicManager.getInstance();
+        stageMusic.setVolume(context.getSettingsManager().getMusicVolume() / 100f);
+        stageMusic.playStageMusic("stage", "/sounds/stage.mp3");
     }
 
     /**

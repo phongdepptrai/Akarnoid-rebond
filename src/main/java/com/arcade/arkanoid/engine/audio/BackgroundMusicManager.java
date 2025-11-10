@@ -9,6 +9,7 @@ public class BackgroundMusicManager {
     private static BackgroundMusicManager instance;
     private final SoundManager soundManager;
     private String currentTheme;
+    private float masterVolume = 1.0f;
 
     private BackgroundMusicManager() {
         this.soundManager = new SoundManager();
@@ -44,6 +45,7 @@ public class BackgroundMusicManager {
         }
 
         // Load and play new theme
+        soundManager.setGlobalVolume(masterVolume);
         soundManager.load(themeId, resourcePath);
         soundManager.loop(themeId);
         currentTheme = themeId;
@@ -66,5 +68,14 @@ public class BackgroundMusicManager {
      */
     public String getCurrentTheme() {
         return currentTheme;
+    }
+
+    public void setVolume(float volume) {
+        masterVolume = Math.max(0f, Math.min(1f, volume));
+        soundManager.setGlobalVolume(masterVolume);
+    }
+
+    public float getVolume() {
+        return masterVolume;
     }
 }

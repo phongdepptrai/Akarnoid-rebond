@@ -6,6 +6,7 @@ public class StageMusicManager {
     private boolean isPlaying;
     private boolean isPaused;
     private String currentStageMusic;
+    private float masterVolume = 1.0f;
 
     private StageMusicManager() {
         this.soundManager = new SoundManager();
@@ -31,6 +32,7 @@ public class StageMusicManager {
         }
 
         // Load and play new music
+        soundManager.setGlobalVolume(masterVolume);
         soundManager.load(musicId, resourcePath);
         soundManager.loop(musicId);
         currentStageMusic = musicId;
@@ -47,6 +49,7 @@ public class StageMusicManager {
 
     public void resume() {
         if (isPlaying && isPaused && currentStageMusic != null) {
+            soundManager.setGlobalVolume(masterVolume);
             soundManager.loop(currentStageMusic);
             isPaused = false;
         }
@@ -71,5 +74,14 @@ public class StageMusicManager {
 
     public String getCurrentStageMusic() {
         return currentStageMusic;
+    }
+
+    public void setVolume(float volume) {
+        masterVolume = Math.max(0f, Math.min(1f, volume));
+        soundManager.setGlobalVolume(masterVolume);
+    }
+
+    public float getVolume() {
+        return masterVolume;
     }
 }

@@ -70,7 +70,9 @@ public class WorldMapScene extends Scene {
         mapOffset = mapTargetOffset;
 
         // Start background music using singleton
-        BackgroundMusicManager.getInstance().playTheme("menu_theme", "/sounds/theme_song.mp3");
+        BackgroundMusicManager musicManager = BackgroundMusicManager.getInstance();
+        musicManager.setVolume(context.getSettingsManager().getMusicVolume() / 100f);
+        musicManager.playTheme("menu_theme", "/sounds/theme_song.mp3");
     }
 
     @Override

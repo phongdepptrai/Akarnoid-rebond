@@ -55,4 +55,17 @@ public class SettingsManager {
         settings.setLocale(locale.toLanguageTag());
         save();
     }
+
+    public int getMusicVolume() {
+        return settings.getMusicVolume();
+    }
+
+    public void setMusicVolume(int volume) {
+        int clamped = Math.max(0, Math.min(100, volume));
+        if (clamped == settings.getMusicVolume()) {
+            return;
+        }
+        settings.setMusicVolume(clamped);
+        save();
+    }
 }

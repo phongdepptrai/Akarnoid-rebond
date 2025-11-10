@@ -93,6 +93,7 @@
   "saveMenu.defaultName": "Player {0}",
   "saveMenu.summarySkins": "Paddle {0} ({1}) • Ball {2} ({3})",
   "menu.shop": "Shop",
+  "menu.settings": "Settings",
   "shop.title": "Cosmic Boutique",
   "shop.coins": "Coins: {0}",
   "shop.instructions.category": "↑/↓ to pick a category • Enter to open • ESC to return",
@@ -123,5 +124,14 @@
   "shop.buff.applied": "{0} activated!",
   "shop.category.paddle": "Paddle Skins",
   "shop.category.ball": "Ball Skins",
-  "shop.category.buff": "Buff Station"
+  "shop.category.buff": "Buff Station",
+  "settings.title": "Settings",
+  "settings.instructions": "Use Up/Down to move, Left/Right to adjust, Enter or ESC to go back.",
+  "settings.musicVolume": "Music Volume",
+  "settings.language": "Language",
+  "settings.language.option.en": "English",
+  "settings.language.option.vi": "Vietnamese",
+  "settings.back": "Back",
+  "settings.status.volume": "Music volume set to {0}%",
+  "settings.status.language": "Language switched to {0}"
 }

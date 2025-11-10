@@ -6,11 +6,13 @@ public class GameSettings {
     private boolean soundEnabled;
     private boolean musicEnabled;
     private String locale;
+    private int musicVolume;
 
     public GameSettings() {
         this.soundEnabled = true;
         this.musicEnabled = true;
         this.locale = Locale.getDefault().toLanguageTag();
+        this.musicVolume = 100;
     }
 
     public boolean isSoundEnabled() {
@@ -37,9 +39,20 @@ public class GameSettings {
         this.locale = locale;
     }
 
+    public int getMusicVolume() {
+        return musicVolume;
+    }
+
+    public void setMusicVolume(int musicVolume) {
+        this.musicVolume = musicVolume;
+    }
+
     public void ensureDefaults() {
         if (locale == null || locale.isBlank()) {
             locale = Locale.getDefault().toLanguageTag();
+        }
+        if (musicVolume < 0 || musicVolume > 100) {
+            musicVolume = Math.min(100, Math.max(0, musicVolume));
         }
     }
 }
