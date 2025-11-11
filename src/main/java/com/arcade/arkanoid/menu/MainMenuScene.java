@@ -41,9 +41,9 @@ public class MainMenuScene extends Scene {
 
     private final Font titleFont = new Font("iomanoid", Font.PLAIN, 150);
     private final Font subtitleFont = new Font("iomanoid", Font.PLAIN, 80);
-    private final Font optionFont = new Font("pixel_emulator", Font.PLAIN, 26);
+    private final Font optionFont = new Font("BoldPixels", Font.PLAIN, 26);
     private final Font hintFont = new Font("Orbitron", Font.PLAIN, 16);
-    private final Font iconLabelFont = new Font("pixel_emulator", Font.PLAIN, 13);
+    private final Font iconLabelFont = new Font("BoldPixels", Font.PLAIN, 13);
 
     // Icon layout constants
     private static final int ICON_SIZE = 80;
@@ -125,7 +125,6 @@ public class MainMenuScene extends Scene {
         }
 
         if (input.isKeyJustPressed(KeyEvent.VK_T)) {
-            // context.getScenes().switchTo(ArkanoidGame.SCENE_TUTORIAL);
             return;
         }
 

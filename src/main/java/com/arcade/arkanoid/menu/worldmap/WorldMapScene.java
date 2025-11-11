@@ -32,8 +32,9 @@ import java.util.Random;
 public class WorldMapScene extends Scene {
     private final LevelManager levelManager = new LevelManager();
     private final List<LevelNode> nodes = new ArrayList<>();
-    private final Font nodeFont = new Font("pixel_emulator", Font.PLAIN, 12);
-    private final Font infoFont = new Font("pixel_emulator", Font.PLAIN, 9);
+    private BufferedImage worldMapBackground;
+    private final Font nodeFont = new Font("BoldPixel", Font.PLAIN, 12);
+    private final Font infoFont = new Font("BoldPixel", Font.PLAIN, 9);
     private final LocalizationService localization;
     private final List<Star> starField = new ArrayList<>();
     private final Random random = new Random();

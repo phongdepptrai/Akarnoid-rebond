@@ -9,19 +9,20 @@ public class FontLoader {
     private static boolean loaded = false;
 
     public static void loadAll() {
-        if (loaded) return;
+        if (loaded)
+            return;
 
         String[] fonts = {
-            "/fonts/Orbitron-Regular.ttf",
-            "/fonts/Orbitron-Bold.ttf",
-            "/fonts/Orbitron-ExtraBold.ttf",
-            "/fonts/Orbitron-Medium.ttf",
-            "/fonts/Orbitron-Black.ttf",
-            "/fonts/Orbitron-SemiBold.ttf",
-            "/fonts/generation.ttf",
-            "/fonts/optimus.otf",
-            "/fonts/pixel_emulator.ttf",
-            "/fonts/iomanoid.ttf"
+                "/fonts/Orbitron-Regular.ttf",
+                "/fonts/Orbitron-Bold.ttf",
+                "/fonts/Orbitron-ExtraBold.ttf",
+                "/fonts/Orbitron-Medium.ttf",
+                "/fonts/Orbitron-Black.ttf",
+                "/fonts/Orbitron-SemiBold.ttf",
+                "/fonts/generation.ttf",
+                "/fonts/optimus.otf",
+                "/fonts/BoldPixels.ttf",
+                "/fonts/iomanoid.ttf"
         };
 
         for (String path : fonts) {
