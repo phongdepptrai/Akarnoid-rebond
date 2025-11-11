@@ -20,7 +20,7 @@ public class FontLoader {
             "/fonts/Orbitron-SemiBold.ttf",
             "/fonts/generation.ttf",
             "/fonts/optimus.otf",
-            "/fonts/emulogic.ttf",
+            "/fonts/pixel_emulator.ttf",
             "/fonts/iomanoid.ttf"
         };
 

@@ -41,9 +41,9 @@ public class MainMenuScene extends Scene {
 
     private final Font titleFont = new Font("iomanoid", Font.PLAIN, 150);
     private final Font subtitleFont = new Font("iomanoid", Font.PLAIN, 80);
-    private final Font optionFont = new Font("emulogic", Font.PLAIN, 26);
+    private final Font optionFont = new Font("pixel_emulator", Font.PLAIN, 26);
     private final Font hintFont = new Font("Orbitron", Font.PLAIN, 16);
-    private final Font iconLabelFont = new Font("emulogic", Font.PLAIN, 13);
+    private final Font iconLabelFont = new Font("pixel_emulator", Font.PLAIN, 13);
 
     // Icon layout constants
     private static final int ICON_SIZE = 80;
