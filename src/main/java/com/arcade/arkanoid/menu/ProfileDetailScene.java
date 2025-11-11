@@ -19,11 +19,10 @@ import java.time.ZoneOffset;
  * Features a sci-fi themed UI with animated background and cyan borders.
  */
 public class ProfileDetailScene extends Scene {
-    private static final Font TITLE_FONT = new Font("BoldPixels", Font.BOLD, 30);
-    private static final Font LABEL_FONT = new Font("BoldPixels", Font.PLAIN, 20);
-    private static final Font VALUE_FONT = new Font("BoldPixels", Font.PLAIN, 16);
-    private static final Font HINT_FONT = new Font("BoldPixels", Font.PLAIN, 16);
-    private static final Color CYAN_BRIGHT = new Color(0, 255, 255, 230);
+    private static final Font TITLE_FONT = new Font("BoldPixels", Font.BOLD, 60);
+    private static final Font LABEL_FONT = new Font("BoldPixels", Font.PLAIN, 30);
+    private static final Font VALUE_FONT = new Font("BoldPixels", Font.PLAIN, 26);
+    private static final Font HINT_FONT = new Font("BoldPixels", Font.PLAIN, 26);
     private static final Color CYAN_LABEL = new Color(100, 180, 255);
 
     private BufferedImage profilePicture;
@@ -97,7 +96,7 @@ public class ProfileDetailScene extends Scene {
         drawProfilePicture(g, picX, picY, picSize);
 
         // Display name and ID
-        drawCenteredText(g, profile.getDisplayName(), new Font("BoldPixels", Font.BOLD, 15),
+        drawCenteredText(g, profile.getDisplayName(), new Font("BoldPixels", Font.BOLD, 30),
                 Color.WHITE, panelX + panelW / 2, picY + picSize + 40);
         drawCenteredText(g, "ID: " + profile.getPlayerId().substring(0, 8) + "...",
                 new Font("Orbitron", Font.PLAIN, 14), new Color(150, 150, 150),
@@ -136,12 +135,6 @@ public class ProfileDetailScene extends Scene {
             g.setColor(new Color(0, 150, 255, 100));
             g.fillOval(x - 10, y - 10, size + 20, size + 20);
             g.drawImage(profilePicture, x, y, size, size, null);
-        } else {
-            g.setColor(new Color(0, 150, 255));
-            g.fillOval(x, y, size, size);
-            g.setColor(Color.WHITE);
-            g.setFont(new Font("BoldPixel", Font.BOLD, 60));
-            g.drawString("P", x + 42, y + 80);
         }
     }
 

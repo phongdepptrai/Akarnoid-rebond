@@ -47,10 +47,10 @@ public class SettingsScene extends Scene {
             new LanguageOption(Locale.ENGLISH, "settings.language.option.en"),
             new LanguageOption(new Locale("vi"), "settings.language.option.vi"));
 
-    private final Font titleFont = new Font("Orbitron", Font.BOLD, 46);
-    private final Font optionFont = new Font("Orbitron", Font.PLAIN, 28);
-    private final Font valueFont = new Font("SansSerif", Font.BOLD, 20);
-    private final Font infoFont = new Font("SansSerif", Font.PLAIN, 16);
+    private final Font titleFont = new Font("BoldPixels", Font.BOLD, 46);
+    private final Font optionFont = new Font("BoldPixels", Font.PLAIN, 28);
+    private final Font valueFont = new Font("BoldPixels", Font.BOLD, 20);
+    private final Font infoFont = new Font("BoldPixels", Font.PLAIN, 16);
 
     private int selectedIndex;
     private int musicVolume;

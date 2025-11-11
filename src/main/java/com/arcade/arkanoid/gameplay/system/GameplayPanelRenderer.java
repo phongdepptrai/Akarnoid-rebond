@@ -19,10 +19,10 @@ import java.util.List;
  */
 public class GameplayPanelRenderer {
     private static final int PANEL_WIDTH = 240;
-    private static final Font TITLE_FONT = new Font("BoldPixel", Font.PLAIN, 14);
-    private static final Font VALUE_FONT = new Font("BoldPixel", Font.PLAIN, 20);
-    private static final Font SMALL_VALUE_FONT = new Font("BoldPixel", Font.PLAIN, 16);
-    private static final Font OBJECTIVE_FONT = new Font("BoldPixel", Font.PLAIN, 8);
+    private static final Font TITLE_FONT = new Font("BoldPixels", Font.PLAIN, 30);
+    private static final Font VALUE_FONT = new Font("BoldPixels", Font.PLAIN, 30);
+    private static final Font SMALL_VALUE_FONT = new Font("BoldPixels", Font.PLAIN, 25);
+    private static final Font OBJECTIVE_FONT = new Font("BoldPixels", Font.PLAIN, 16);
 
     // Singleton instance
     private static GameplayPanelRenderer instance;

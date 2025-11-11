@@ -89,7 +89,7 @@ public class GameplayScene extends Scene {
 
     @Override
     public void onEnter() {
-        loadPaddleImage();
+        reloadPaddleImage();
         System.out.println("onen");
         loadBackgroundImage();
         if (!initialized) {
@@ -99,25 +99,36 @@ public class GameplayScene extends Scene {
         paused = false;
         statusMessage = "";
 
-        // Load sound effects
         soundManager.load("brick_hit", "/sounds/brick.mp3");
 
-        // Play stage music using Singleton
         StageMusicManager stageMusic = StageMusicManager.getInstance();
         stageMusic.setVolume(context.getSettingsManager().getMusicVolume() / 100f);
         stageMusic.playStageMusic("stage", "/sounds/stage.mp3");
     }
 
     /**
-     * Factory method to load paddle image asset.
+     * Reload paddle image based on current active skin (called when entering scene
+     * to reflect skin changes)
      */
-    private void loadPaddleImage() {
-        if (paddleImage == null) {
-            AssetManager assets = context.getAssets();
-            assets.loadImage("paddle", "/graphics/paddle.PNG");
-            System.out.println("load ok");
-            paddleImage = assets.getImage("paddle");
-        }
+    private void reloadPaddleImage() {
+        AssetManager assets = context.getAssets();
+        PlayerProfile profile = context.getProfileManager().getActiveProfile();
+        SkinCatalog.PaddleSkin paddleSkin = SkinCatalog.paddleSkin(profile.getActivePaddleSkin());
+        String imagePath = paddleSkin.imagePath();
+
+        assets.loadImage("paddle", imagePath);
+        System.out.println("Loaded paddle skin: " + profile.getActivePaddleSkin() + " from " + imagePath);
+        paddleImage = assets.getImage("paddle");
+    }
+
+    /**
+     * Load paddle image for specific skin (always reload to handle skin changes)
+     */
+    private void loadPaddleImageForSkin(SkinCatalog.PaddleSkin paddleSkin) {
+        AssetManager assets = context.getAssets();
+        String imagePath = paddleSkin.imagePath();
+        assets.loadImage("paddle", imagePath);
+        paddleImage = assets.getImage("paddle");
     }
 
     /**
@@ -207,10 +218,9 @@ public class GameplayScene extends Scene {
                 PADDLE_SPEED,
                 paddleSkin.fillColor(),
                 paddleSkin.borderColor());
-        if (paddleImage == null) {
-            loadPaddleImage();
-        }
+        loadPaddleImageForSkin(paddleSkin);
         paddle.setPaddleImage(paddleImage);
+
         balls.add(createBall(ballSkin));
         currentBallSpeed = BASE_BALL_SPEED;
         resetBall();
@@ -416,16 +426,9 @@ public class GameplayScene extends Scene {
                 g2.fillRect(0, 0, canvasWidth, canvasHeight);
             }
 
-            // Draw ARKANOID title and neon border dots
             visualEffects.drawGameAreaBorder(g2, canvasWidth, canvasHeight);
-
-            // Render game objects (bricks, paddle, balls, power-ups)
             renderArena(g2);
-
-            // Render side panels with score, lives, level, and objectives
             panelRenderer.render(g2, canvasWidth, canvasHeight, score, lives, activeLevel, objectiveEngine.snapshot());
-
-            // Render center messages
             String message = null;
             if (!statusMessage.isBlank()) {
                 message = statusMessage;
@@ -564,7 +567,6 @@ public class GameplayScene extends Scene {
         int height = context.getConfig().height();
         boolean hitBoundary = false;
 
-        // Use visual effects boundaries (neon dot border)
         double leftBoundary = visualEffects.getLeftBound();
         double rightBoundary = visualEffects.getRightBound(width);
         double topBoundary = visualEffects.getTopBound();

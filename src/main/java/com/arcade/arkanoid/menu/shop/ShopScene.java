@@ -5,6 +5,7 @@ import com.arcade.arkanoid.engine.core.GameContext;
 import com.arcade.arkanoid.engine.input.InputManager;
 import com.arcade.arkanoid.engine.scene.Scene;
 import com.arcade.arkanoid.engine.audio.BackgroundMusicManager;
+import com.arcade.arkanoid.engine.assets.AssetManager;
 import com.arcade.arkanoid.economy.EconomyService;
 import com.arcade.arkanoid.gameplay.cosmetics.SkinCatalog;
 import com.arcade.arkanoid.localization.LocalizationService;
@@ -15,9 +16,12 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.event.KeyEvent;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ShopScene extends Scene {
     private enum ViewMode {
@@ -80,12 +84,11 @@ public class ShopScene extends Scene {
 
     private final LocalizationService localization;
     private final EconomyService economyService;
-    private final Font titleFont = new Font("Orbitron", Font.BOLD, 48);
-    private final Font sectionFont = new Font("Orbitron", Font.BOLD, 26);
-    private final Font categoryFont = new Font("Orbitron", Font.BOLD, 30);
-    private final Font itemFont = new Font("SansSerif", Font.BOLD, 22);
-    private final Font detailFont = new Font("SansSerif", Font.PLAIN, 18);
-
+    private final Font titleFont = new Font("BoldPixels", Font.BOLD, 48);
+    private final Font sectionFont = new Font("BoldPixels", Font.BOLD, 26);
+    private final Font categoryFont = new Font("BoldPixels", Font.BOLD, 30);
+    private final Font itemFont = new Font("BoldPixels", Font.BOLD, 22);
+    private final Font detailFont = new Font("BoldPixels", Font.PLAIN, 18);
     private final List<CategoryEntry> categories = Arrays.asList(
             new CategoryEntry(ViewMode.PADDLE, "shop.category.paddle"),
             new CategoryEntry(ViewMode.BALL, "shop.category.ball"),
@@ -100,12 +103,26 @@ public class ShopScene extends Scene {
     private double scrollOffset = 0.0;
     private double targetScrollOffset = 0.0;
     private String statusMessage = "";
+    private final Map<String, BufferedImage> paddleImageCache = new HashMap<>();
 
     public ShopScene(GameContext context) {
         super(context);
         this.localization = context.getLocalizationService();
         this.economyService = context.getEconomyService();
         bootstrapItems();
+        loadPaddleImages();
+    }
+
+    private void loadPaddleImages() {
+        AssetManager assets = context.getAssets();
+        // Load all paddle skin images
+        for (ShopItem item : paddleItems) {
+            SkinCatalog.PaddleSkin skin = SkinCatalog.paddleSkin(item.id);
+            String imagePath = skin.imagePath();
+            String assetKey = "paddle_shop_" + item.id;
+            assets.loadImage(assetKey, imagePath);
+            paddleImageCache.put(item.id, assets.getImage(assetKey));
+        }
     }
 
     private void bootstrapItems() {
@@ -367,12 +384,17 @@ public class ShopScene extends Scene {
         int previewY = y + 20;
         switch (item.type) {
             case PADDLE:
-                SkinCatalog.PaddleSkin paddleSkin = SkinCatalog.paddleSkin(item.id);
-                graphics.setColor(paddleSkin.fillColor());
-                graphics.fillRoundRect(previewX, previewY + 12, 130, 22, 16, 16);
-                graphics.setColor(paddleSkin.borderColor());
-                graphics.setStroke(new BasicStroke(3));
-                graphics.drawRoundRect(previewX, previewY + 12, 130, 22, 16, 16);
+                BufferedImage paddleImage = paddleImageCache.get(item.id);
+                if (paddleImage != null) {
+                    graphics.drawImage(paddleImage, previewX, previewY + 6, 130, 28, null);
+                } else {
+                    SkinCatalog.PaddleSkin paddleSkin = SkinCatalog.paddleSkin(item.id);
+                    graphics.setColor(paddleSkin.fillColor());
+                    graphics.fillRoundRect(previewX, previewY + 12, 130, 22, 16, 16);
+                    graphics.setColor(paddleSkin.borderColor());
+                    graphics.setStroke(new BasicStroke(3));
+                    graphics.drawRoundRect(previewX, previewY + 12, 130, 22, 16, 16);
+                }
                 break;
             case BALL:
                 SkinCatalog.BallSkin ballSkin = SkinCatalog.ballSkin(item.id);

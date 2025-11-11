@@ -41,9 +41,9 @@ public class MainMenuScene extends Scene {
 
     private final Font titleFont = new Font("iomanoid", Font.PLAIN, 150);
     private final Font subtitleFont = new Font("iomanoid", Font.PLAIN, 80);
-    private final Font optionFont = new Font("BoldPixels", Font.PLAIN, 26);
-    private final Font hintFont = new Font("Orbitron", Font.PLAIN, 16);
-    private final Font iconLabelFont = new Font("BoldPixels", Font.PLAIN, 13);
+    private final Font optionFont = new Font("BoldPixels", Font.PLAIN, 46);
+    private final Font hintFont = new Font("BoldPixels", Font.PLAIN, 16);
+    private final Font iconLabelFont = new Font("BoldPixels", Font.PLAIN, 38);
 
     // Icon layout constants
     private static final int ICON_SIZE = 80;
@@ -58,7 +58,6 @@ public class MainMenuScene extends Scene {
     private BufferedImage backgroundImage;
     private BufferedImage backgroundNoPlanets;
     private BufferedImage profileIcon;
-    private BufferedImage profilePicture;
     private BufferedImage tutorialIcon;
     private double animationTime = 0;
 
@@ -91,7 +90,6 @@ public class MainMenuScene extends Scene {
         backgroundImage = assets.getImage("background");
         backgroundNoPlanets = assets.getImage("background1");
         profileIcon = assets.getImage("profile_icon");
-        profilePicture = assets.getImage("profile_pic");
         tutorialIcon = assets.getImage("tutorial_icon");
         economy.claimDailyBonus();
 

@@ -32,9 +32,8 @@ import java.util.Random;
 public class WorldMapScene extends Scene {
     private final LevelManager levelManager = new LevelManager();
     private final List<LevelNode> nodes = new ArrayList<>();
-    private BufferedImage worldMapBackground;
-    private final Font nodeFont = new Font("BoldPixel", Font.PLAIN, 12);
-    private final Font infoFont = new Font("BoldPixel", Font.PLAIN, 9);
+    private final Font nodeFont = new Font("BoldPixels", Font.PLAIN, 25);
+    private final Font infoFont = new Font("BoldPixels", Font.PLAIN, 15);
     private final LocalizationService localization;
     private final List<Star> starField = new ArrayList<>();
     private final Random random = new Random();
@@ -267,16 +266,8 @@ public class WorldMapScene extends Scene {
     }
 
     private void drawUi(Graphics2D graphics) {
-        PlayerProfile profile = context.getProfileManager().getActiveProfile();
         graphics.setFont(infoFont);
         graphics.setColor(Color.WHITE);
-        graphics.drawString(localization.translate("worldMap.label.lives", profile.getLives(), profile.getMaxLives()),
-                40, 60);
-        graphics.drawString(localization.translate("worldMap.label.coins", profile.getCoins()), 40, 90);
-        graphics.drawString(
-                localization.translate("worldMap.label.energy", profile.getEnergy(), profile.getMaxEnergy()), 40, 120);
-        graphics.drawString(localization.translate("worldMap.label.streak", profile.getDailyStreak()), 40, 150);
-
         if (statusMessage != null && !statusMessage.isBlank()) {
             graphics.drawString(statusMessage, 40, context.getConfig().height() - 80);
         }

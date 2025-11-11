@@ -9,10 +9,12 @@ public final class SkinCatalog {
     public static final class PaddleSkin {
         private final Color fillColor;
         private final Color borderColor;
+        private final String imagePath;
 
-        public PaddleSkin(Color fillColor, Color borderColor) {
+        public PaddleSkin(Color fillColor, Color borderColor, String imagePath) {
             this.fillColor = fillColor;
             this.borderColor = borderColor;
+            this.imagePath = imagePath;
         }
 
         public Color fillColor() {
@@ -21,6 +23,10 @@ public final class SkinCatalog {
 
         public Color borderColor() {
             return borderColor;
+        }
+
+        public String imagePath() {
+            return imagePath;
         }
     }
 
@@ -46,11 +52,16 @@ public final class SkinCatalog {
     private static final Map<String, BallSkin> BALL_SKINS = new HashMap<>();
 
     static {
-        PADDLE_SKINS.put("classic", new PaddleSkin(new Color(0x00BCD4), new Color(0x00849C)));
-        PADDLE_SKINS.put("neon-stream", new PaddleSkin(new Color(0x7C4DFF), new Color(0x311B92)));
-        PADDLE_SKINS.put("retro-grid", new PaddleSkin(new Color(0x1DE9B6), new Color(0x00695C)));
-        PADDLE_SKINS.put("sunset-glow", new PaddleSkin(new Color(0xFF7043), new Color(0xBF360C)));
-        PADDLE_SKINS.put("frost-byte", new PaddleSkin(new Color(0x4DD0E1), new Color(0x006064)));
+        PADDLE_SKINS.put("classic",
+                new PaddleSkin(new Color(0x00BCD4), new Color(0x00849C), "/graphics/paddle.PNG"));
+        PADDLE_SKINS.put("neon-stream",
+                new PaddleSkin(new Color(0x7C4DFF), new Color(0x311B92), "/graphics/neon_paddle.png"));
+        PADDLE_SKINS.put("retro-grid",
+                new PaddleSkin(new Color(0x1DE9B6), new Color(0x00695C), "/graphics/retro_paddle.png"));
+        PADDLE_SKINS.put("sunset-glow",
+                new PaddleSkin(new Color(0xFF7043), new Color(0xBF360C), "/graphics/sunset_paddle.png"));
+        PADDLE_SKINS.put("frost-byte",
+                new PaddleSkin(new Color(0x4DD0E1), new Color(0x006064), "/graphics/frost_paddle.png"));
 
         BALL_SKINS.put("classic", new BallSkin(Color.WHITE, new Color(0xC5CAE9)));
         BALL_SKINS.put("ion-burst", new BallSkin(new Color(0xFF5722), new Color(0xBF360C)));
