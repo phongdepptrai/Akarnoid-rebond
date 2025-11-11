@@ -7,6 +7,7 @@ import java.nio.file.Paths;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
+import java.util.function.Consumer;
 
 /**
  * Manages the active profile and integrates save/load lifecycle.
@@ -16,6 +17,7 @@ public class ProfileManager {
     private final ProfileStorage storage;
     private PlayerProfile activeProfile;
     private final IOThreadPool ioThreadPool;
+    private volatile Consumer<PlayerProfile> postSaveListener;
 
     public ProfileManager() {
         this(defaultProfilePath());
@@ -41,8 +43,10 @@ public class ProfileManager {
      * Save profile asynchronously on I/O Thread.
      */
     public void saveProfile() {
+        PlayerProfile profile = activeProfile;
         ioThreadPool.submit(() -> {
-            storage.save(activeProfile);
+            storage.save(profile);
+            onProfileSaved(profile);
         });
     }
 
@@ -50,7 +54,9 @@ public class ProfileManager {
      * Save profile synchronously (blocking).
      */
     public void saveProfileSync() {
-        storage.save(activeProfile);
+        PlayerProfile profile = activeProfile;
+        storage.save(profile);
+        onProfileSaved(profile);
     }
 
     public void refreshProfile(PlayerProfile updatedProfile) {
@@ -60,6 +66,29 @@ public class ProfileManager {
         updatedProfile.ensureDefaults();
         this.activeProfile = updatedProfile;
         saveProfile();
+    }
+
+    /**
+     * Registers a callback that runs every time the active profile is persisted.
+     */
+    public void setPostSaveListener(Consumer<PlayerProfile> listener) {
+        this.postSaveListener = listener;
+    }
+
+    /**
+     * Invoked after the profile finishes persisting to disk. Subclasses can override to keep
+     * test doubles lightweight while still reusing the listener dispatching logic.
+     */
+    protected void onProfileSaved(PlayerProfile profile) {
+        Consumer<PlayerProfile> listener = postSaveListener;
+        if (listener == null || profile == null) {
+            return;
+        }
+        try {
+            listener.accept(profile);
+        } catch (Exception e) {
+            System.err.println("Post-save listener failed: " + e.getMessage());
+        }
     }
 
     /**

@@ -8,12 +8,20 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
 public class SampleSaveRepository {
-    private static final Path SAVE_DIR = Paths.get("data", "profiles");
-    private final ObjectMapper mapper = new ObjectMapper().findAndRegisterModules();
+    private final Path saveDir;
+    private final ObjectMapper mapper;
+
+    public SampleSaveRepository() {
+        this(Paths.get("data", "profiles"));
+    }
+
+    public SampleSaveRepository(Path saveDir) {
+        this.saveDir = saveDir;
+        this.mapper = new ObjectMapper().findAndRegisterModules();
+    }
 
     public List<SaveSlotSummary> loadSlots(int maxSlots) {
         List<SaveSlotSummary> summaries = new ArrayList<>();
@@ -24,7 +32,7 @@ public class SampleSaveRepository {
     }
 
     private SaveSlotSummary loadSlot(int slotId) {
-        Path path = SAVE_DIR.resolve("save-slot-" + slotId + ".json");
+        Path path = resolveSlotPath(slotId);
         if (!Files.exists(path)) {
             return new SaveSlotSummary(slotId, null, 0);
         }
@@ -42,7 +50,7 @@ public class SampleSaveRepository {
     }
 
     public void deleteSlot(int slotId) {
-        Path path = SAVE_DIR.resolve("save-slot-" + slotId + ".json");
+        Path path = resolveSlotPath(slotId);
         try {
             Files.deleteIfExists(path);
         } catch (IOException e) {
@@ -52,7 +60,7 @@ public class SampleSaveRepository {
 
     public void writeSlot(int slotId, PlayerProfile profile) {
         profile.ensureDefaults();
-        Path path = SAVE_DIR.resolve("save-slot-" + slotId + ".json");
+        Path path = resolveSlotPath(slotId);
         try {
             Files.createDirectories(path.getParent());
             SlotFile file = new SlotFile();
@@ -64,6 +72,10 @@ public class SampleSaveRepository {
         } catch (IOException e) {
             System.err.println("Failed to write save slot " + slotId + ": " + e.getMessage());
         }
+    }
+
+    private Path resolveSlotPath(int slotId) {
+        return saveDir.resolve("save-slot-" + slotId + ".json");
     }
 
     private static class SlotFile {

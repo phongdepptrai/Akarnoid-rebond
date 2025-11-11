@@ -23,7 +23,7 @@ public class SaveMenuScene extends Scene {
     private static final DateTimeFormatter DATE_FORMAT =
             DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm").withZone(ZoneId.systemDefault());
 
-    private final SampleSaveRepository repository = new SampleSaveRepository();
+    private final SampleSaveRepository repository;
     private final LocalizationService localization;
     private final Font titleFont = new Font("Orbitron", Font.BOLD, 48);
     private final Font slotFont = new Font("SansSerif", Font.BOLD, 26);
@@ -35,7 +35,12 @@ public class SaveMenuScene extends Scene {
     private String statusMessage = "";
 
     public SaveMenuScene(GameContext context) {
+        this(context, new SampleSaveRepository());
+    }
+
+    SaveMenuScene(GameContext context, SampleSaveRepository repository) {
         super(context);
+        this.repository = repository;
         this.localization = context.getLocalizationService();
     }
 
@@ -74,22 +79,29 @@ public class SaveMenuScene extends Scene {
             return;
         }
         SaveSlotSummary summary = slots.get(selectedIndex);
+        int slotId = summary.getSlotId();
         if (summary.isOccupied()) {
             PlayerProfile profile = summary.getProfile();
+            bindSlotPersistence(slotId);
+            repository.writeSlot(slotId, profile);
             context.getProfileManager().refreshProfile(profile);
-            repository.writeSlot(summary.getSlotId(), profile);
-            slots.set(selectedIndex, new SaveSlotSummary(summary.getSlotId(), profile, System.currentTimeMillis() / 1000));
+            slots.set(selectedIndex, new SaveSlotSummary(slotId, profile, System.currentTimeMillis() / 1000));
             statusMessage = localization.translate("saveMenu.slotLoaded", profile.getDisplayName());
             context.getScenes().switchTo(ArkanoidGame.SCENE_MAP);
         } else {
             PlayerProfile profile = PlayerProfile.newDefault();
             profile.setDisplayName(localization.translate("saveMenu.defaultName", summary.getSlotId()));
-            repository.writeSlot(summary.getSlotId(), profile);
+            bindSlotPersistence(slotId);
+            repository.writeSlot(slotId, profile);
             context.getProfileManager().refreshProfile(profile);
-            slots.set(selectedIndex, new SaveSlotSummary(summary.getSlotId(), profile, System.currentTimeMillis() / 1000));
+            slots.set(selectedIndex, new SaveSlotSummary(slotId, profile, System.currentTimeMillis() / 1000));
             statusMessage = localization.translate("saveMenu.slotCreated", profile.getDisplayName());
             context.getScenes().switchTo(ArkanoidGame.SCENE_MAP);
         }
+    }
+
+    private void bindSlotPersistence(int slotId) {
+        context.getProfileManager().setPostSaveListener(profile -> repository.writeSlot(slotId, profile));
     }
 
     private void deleteSelectedSlot() {
