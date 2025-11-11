@@ -89,7 +89,7 @@ public class GameplayScene extends Scene {
 
     @Override
     public void onEnter() {
-        reloadPaddleImage();
+        refreshActiveSkins();
         System.out.println("onen");
         loadBackgroundImage();
         if (!initialized) {
@@ -107,18 +107,25 @@ public class GameplayScene extends Scene {
     }
 
     /**
+     * Ensure paddle/ball skins.
+     */
+    private void refreshActiveSkins() {
+        reloadPaddleImage();
+        reloadBallColors();
+    }
+
+    /**
      * Reload paddle image based on current active skin (called when entering scene
      * to reflect skin changes)
      */
     private void reloadPaddleImage() {
-        AssetManager assets = context.getAssets();
         PlayerProfile profile = context.getProfileManager().getActiveProfile();
         SkinCatalog.PaddleSkin paddleSkin = SkinCatalog.paddleSkin(profile.getActivePaddleSkin());
-        String imagePath = paddleSkin.imagePath();
-
-        assets.loadImage("paddle", imagePath);
-        System.out.println("Loaded paddle skin: " + profile.getActivePaddleSkin() + " from " + imagePath);
-        paddleImage = assets.getImage("paddle");
+        loadPaddleImageForSkin(paddleSkin);
+        System.out.println("Loaded paddle skin: " + profile.getActivePaddleSkin() + " from " + paddleSkin.imagePath());
+        if (paddle != null) {
+            paddle.setPaddleImage(paddleImage);
+        }
     }
 
     /**
@@ -127,8 +134,30 @@ public class GameplayScene extends Scene {
     private void loadPaddleImageForSkin(SkinCatalog.PaddleSkin paddleSkin) {
         AssetManager assets = context.getAssets();
         String imagePath = paddleSkin.imagePath();
-        assets.loadImage("paddle", imagePath);
-        paddleImage = assets.getImage("paddle");
+        String assetKey = "paddle-skin-" + imagePath;
+        assets.loadImage(assetKey, imagePath);
+        paddleImage = assets.getImage(assetKey);
+    }
+
+    /**
+     * Update every active ball.
+     */
+    private void reloadBallColors() {
+        if (balls.isEmpty() && pendingBalls.isEmpty()) {
+            return;
+        }
+        PlayerProfile profile = context.getProfileManager().getActiveProfile();
+        SkinCatalog.BallSkin ballSkin = SkinCatalog.ballSkin(profile.getActiveBallSkin());
+        applyBallSkin(balls, ballSkin);
+        applyBallSkin(pendingBalls, ballSkin);
+    }
+
+    private void applyBallSkin(List<Ball> targetBalls, SkinCatalog.BallSkin ballSkin) {
+        for (Ball ball : targetBalls) {
+            if (ball != null) {
+                ball.setBaseColors(ballSkin.fillColor(), ballSkin.borderColor());
+            }
+        }
     }
 
     /**
