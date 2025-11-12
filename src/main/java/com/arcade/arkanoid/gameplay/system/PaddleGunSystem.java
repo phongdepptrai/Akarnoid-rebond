@@ -17,8 +17,8 @@ import java.util.function.Consumer;
  * rendering.
  */
 public final class PaddleGunSystem {
-    private static final double DEFAULT_DURATION_SECONDS = 8.0;
-    private static final double FIRE_INTERVAL_SECONDS = 0.25;
+    private static final double DEFAULT_DURATION_SECONDS = 5.0;
+    private static final double FIRE_INTERVAL_SECONDS = 0.5;
     private static final double LEFT_OFFSET = 10.0;
     private static final double RIGHT_OFFSET = 16.0;
     private static final double ORIGIN_Y_OFFSET = 10.0;

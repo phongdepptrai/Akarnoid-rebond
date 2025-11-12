@@ -27,9 +27,6 @@ import java.awt.image.BufferedImage;
  * Displays game title, menu options, player profile, and background animations.
  */
 public class MainMenuScene extends Scene {
-    /**
-     * Enumeration of available menu actions.
-     */
     private enum MenuAction {
         WORLD_MAP,
         SHOP,
@@ -43,12 +40,11 @@ public class MainMenuScene extends Scene {
     private final Font subtitleFont = new Font("iomanoid", Font.PLAIN, 80);
     private final Font optionFont = new Font("BoldPixels", Font.PLAIN, 46);
     private final Font hintFont = new Font("BoldPixels", Font.PLAIN, 16);
-    private final Font iconLabelFont = new Font("BoldPixels", Font.PLAIN, 38);
+    private final Font iconLabelFont = new Font("BoldPixels", Font.PLAIN, 28);
 
-    // Icon layout constants
-    private static final int ICON_SIZE = 80;
-    private static final int ICON_MARGIN = 40;
-    private static final int ICON_LABEL_OFFSET = 25;
+    private static final int ICON_SIZE = 60;
+    private static final int ICON_MARGIN = 30;
+    private static final int ICON_LABEL_OFFSET = 20;
 
     private final LocalizationService localization;
     private final EconomyService economy;
@@ -61,7 +57,6 @@ public class MainMenuScene extends Scene {
     private BufferedImage tutorialIcon;
     private double animationTime = 0;
 
-    // Cached title rendering for performance
     private BufferedImage cachedTitle;
     private BufferedImage cachedSubtitle;
 
@@ -108,10 +103,20 @@ public class MainMenuScene extends Scene {
         selectedIndex = 0;
     }
 
+    /**
+     * Called when exiting the scene.
+     * Performs cleanup operations if needed.
+     */
     @Override
     public void onExit() {
     }
 
+    /**
+     * Updates menu state and handles user input.
+     * Processes keyboard input for menu navigation and selection.
+     * 
+     * @param deltaTime time elapsed since last update in seconds
+     */
     @Override
     public void update(double deltaTime) {
         animationTime += deltaTime;
@@ -123,6 +128,7 @@ public class MainMenuScene extends Scene {
         }
 
         if (input.isKeyJustPressed(KeyEvent.VK_T)) {
+            context.getScenes().switchTo(ArkanoidGame.SCENE_TUTORIAL);
             return;
         }
 
@@ -253,7 +259,6 @@ public class MainMenuScene extends Scene {
      * These are rendered once at high quality and reused every frame.
      */
     private void createCachedTitles() {
-        // Cache title
         String title = "ARKANOID";
         int titleWidth = (int) titleFont.createGlyphVector(
                 new java.awt.font.FontRenderContext(null, true, true), title).getVisualBounds().getWidth();
@@ -263,10 +268,9 @@ public class MainMenuScene extends Scene {
         Graphics2D g = cachedTitle.createGraphics();
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-        GradientUtils.draw3DSpaceTextFullQuality(g, title, titleFont, 50, 150);
+        GradientUtils.draw3DSpaceTextFullQuality(g, title, titleFont, 50, 100);
         g.dispose();
 
-        // Cache subtitle
         String subtitle = "REBORN";
         int subtitleWidth = (int) subtitleFont.createGlyphVector(
                 new java.awt.font.FontRenderContext(null, true, true), subtitle).getVisualBounds().getWidth();
@@ -276,10 +280,16 @@ public class MainMenuScene extends Scene {
         g = cachedSubtitle.createGraphics();
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-        GradientUtils.draw3DSpaceTextFullQuality(g, subtitle, subtitleFont, 50, 100);
+        GradientUtils.draw3DSpaceTextFullQuality(g, subtitle, subtitleFont, 50, 50);
         g.dispose();
     }
 
+    /**
+     * Renders the main menu scene.
+     * Draws title, hint, and UI elements.
+     * 
+     * @param graphics graphics context for rendering
+     */
     @Override
     public void render(Graphics2D graphics) {
         drawBackground(graphics);
@@ -287,7 +297,6 @@ public class MainMenuScene extends Scene {
         drawPlayerStats(graphics);
         drawTutorialIcon(graphics);
 
-        // Draw cached title
         if (cachedTitle != null) {
             String title = "ARKANOID";
             int titleWidth = graphics.getFontMetrics(titleFont).stringWidth(title);
@@ -296,7 +305,6 @@ public class MainMenuScene extends Scene {
             graphics.drawImage(cachedTitle, titleX, titleY, null);
         }
 
-        // Draw cached subtitle
         if (cachedSubtitle != null) {
             String subtitle = "REBORN";
             graphics.setFont(subtitleFont);
@@ -311,7 +319,7 @@ public class MainMenuScene extends Scene {
             String option = labelFor(options[i]);
             int optionWidth = graphics.getFontMetrics().stringWidth(option);
             int x = (width - optionWidth) / 2;
-            int y = 400 + i * 70;
+            int y = 340 + i * 70;
             if (i == selectedIndex) {
                 graphics.setColor(new Color(0xFFEB3B));
                 graphics.drawString(">", x - 40, y);

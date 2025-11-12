@@ -83,6 +83,15 @@ public class SoundManager {
     }
 
     /**
+     * Stop all currently playing sounds.
+     */
+    public void stopAll() {
+        audioThreadPool.submit(() -> {
+            players.values().forEach(AudioPlayer::stop);
+        });
+    }
+
+    /**
      * Disposes all audio resources and shuts down the thread pool.
      */
     public void dispose() {

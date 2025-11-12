@@ -46,9 +46,8 @@ public class GameplayScene extends Scene {
     private static final double POWERUP_DROP_CHANCE = 0.15;
     private static final int MAX_LIVES = 9;
     private static final int MAX_SIMULTANEOUS_BALLS = 5;
-    private static final double FIRE_BALL_DURATION_SECONDS = 8.0;
+    private static final double FIRE_BALL_DURATION_SECONDS = 5.0;
 
-    // Frame/Panel constants
     public static final int SIDE_PANEL_WIDTH = GameplayPanelRenderer.getPanelWidth();
 
     private final LevelManager levelManager = new LevelManager();
@@ -100,6 +99,12 @@ public class GameplayScene extends Scene {
         statusMessage = "";
 
         soundManager.load("brick_hit", "/sounds/brick.mp3");
+        soundManager.load("life_gain", "/sounds/life.mp3");
+        soundManager.load("multi_ball", "/sounds/multi.mp3");
+        soundManager.load("slow_ball", "/sounds/slow.mp3");
+        soundManager.load("fire_ball", "/sounds/fire.mp3");
+        soundManager.load("expand_paddle", "/sounds/extend.mp3");
+        soundManager.load("paddle_gun", "/sounds/gun.MP3");
 
         StageMusicManager stageMusic = StageMusicManager.getInstance();
         stageMusic.setVolume(context.getSettingsManager().getMusicVolume() / 100f);
@@ -179,6 +184,7 @@ public class GameplayScene extends Scene {
     public void pauseGame() {
         paused = true;
         StageMusicManager.getInstance().pause();
+        soundManager.stopAll();
         PauseScene pauseScene = (PauseScene) context.getScenes().getPersistentScene(ArkanoidGame.SCENE_PAUSE);
         if (pauseScene != null) {
             pauseScene.bindGameplay(this);
@@ -214,6 +220,10 @@ public class GameplayScene extends Scene {
 
         createGameEntities();
         buildBricks(activeLevel);
+
+        StageMusicManager stageMusic = StageMusicManager.getInstance();
+        stageMusic.setVolume(context.getSettingsManager().getMusicVolume() / 100f);
+        stageMusic.playStageMusic("stage", "/sounds/stage.mp3");
     }
 
     /**
@@ -227,8 +237,6 @@ public class GameplayScene extends Scene {
         pendingBalls.clear();
         awaitingLaunch = true;
         stageCleared = false;
-        gameOver = false;
-        statusMessage = localization.translate("gameplay.message.ready");
     }
 
     /**
@@ -308,8 +316,8 @@ public class GameplayScene extends Scene {
 
         double leftBoundary = SIDE_PANEL_WIDTH + 15;
         double rightBoundary = context.getConfig().width() - SIDE_PANEL_WIDTH - 15;
-        double horizontalPadding = leftBoundary + 15; // Start bricks 15px inside left border
-        double verticalPadding = 115; // Moved down 25px total (was 90, now 115)
+        double horizontalPadding = leftBoundary + 15;
+        double verticalPadding = 115;
         double gap = 4;
         double availableWidth = (rightBoundary - 15) - horizontalPadding;
         double brickWidth = (availableWidth - (cols - 1) * gap) / cols;
@@ -344,21 +352,18 @@ public class GameplayScene extends Scene {
         int column = blueprint.column();
         int row = blueprint.row();
 
-        // Check if position is within grid bounds
         if (column < 0 || column >= cols || row < 0 || row >= rows) {
             System.err.println("Invalid brick position: (" + column + "," + row + ") outside grid bounds [0-"
                     + (cols - 1) + ", 0-" + (rows - 1) + "]");
             return false;
         }
 
-        // Check for duplicate position
         String positionKey = column + "," + row;
         if (addedPositions.contains(positionKey)) {
             System.err.println("Duplicate brick detected at position (" + column + "," + row + ")");
             return false;
         }
 
-        // Mark position as occupied
         addedPositions.add(positionKey);
         return true;
     }
@@ -410,7 +415,6 @@ public class GameplayScene extends Scene {
         handleMovementInput(input);
         paddle.update(deltaTime);
 
-        // Clamp paddle within the neon dot border boundaries
         int width = context.getConfig().width();
         double leftBoundary = visualEffects.getLeftBound();
         double rightBoundary = visualEffects.getRightBound(width);
@@ -444,7 +448,6 @@ public class GameplayScene extends Scene {
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 
-            // Draw background
             if (backgroundImage == null) {
                 loadBackgroundImage();
             }
@@ -474,7 +477,6 @@ public class GameplayScene extends Scene {
     }
 
     private void renderArena(Graphics2D graphics) {
-        // Render game objects
         for (Brick brick : bricks) {
             brick.render(graphics);
         }
@@ -527,7 +529,6 @@ public class GameplayScene extends Scene {
             return;
         }
         if (input.isKeyJustPressed(KeyEvent.VK_ESCAPE)) {
-            // Stop stage music before returning to menu
             StageMusicManager.getInstance().stop();
             context.getScenes().switchTo(ArkanoidGame.SCENE_MENU);
         }
@@ -600,27 +601,22 @@ public class GameplayScene extends Scene {
         double rightBoundary = visualEffects.getRightBound(width);
         double topBoundary = visualEffects.getTopBound();
 
-        // Left boundary
         if (ballRef.getPosition().x <= leftBoundary) {
             ballRef.getPosition().x = leftBoundary;
             ballRef.invertX();
             hitBoundary = true;
-        }
-        // Right boundary
-        else if (ballRef.getPosition().x + ballRef.getWidth() >= rightBoundary) {
+        } else if (ballRef.getPosition().x + ballRef.getWidth() >= rightBoundary) {
             ballRef.getPosition().x = rightBoundary - ballRef.getWidth();
             ballRef.invertX();
             hitBoundary = true;
         }
 
-        // Top boundary
         if (ballRef.getPosition().y <= topBoundary) {
             ballRef.getPosition().y = topBoundary;
             ballRef.invertY();
             hitBoundary = true;
         }
 
-        // Bottom - lose life
         if (ballRef.getPosition().y > height) {
             balls.remove(ballRef);
             if (balls.isEmpty()) {
@@ -676,7 +672,7 @@ public class GameplayScene extends Scene {
                     }
                 }
                 brick.hit();
-                soundManager.play("brick_hit"); // Play sound effect when hitting brick
+                soundManager.play("brick_hit");
                 if (ballRef.isFireActive()) {
                     while (!brick.isDestroyed()) {
                         brick.hit();
@@ -706,21 +702,25 @@ public class GameplayScene extends Scene {
         switch (type) {
             case EXPAND_PADDLE:
                 paddle.setWidth(Math.min(paddle.getWidth() * 1.3, 240));
+                soundManager.play("expand_paddle");
                 break;
             case SLOW_BALL:
                 slowBalls();
+                soundManager.play("slow_ball");
                 break;
             case MULTI_BALL:
                 spawnMultiBall();
+                soundManager.play("multi_ball");
                 break;
             case FIRE_BALL:
                 igniteFireBalls();
                 break;
             case PADDLE_GUN:
-                paddleGunSystem.activate();
+                activatePaddleGun();
                 break;
             case EXTRA_LIFE:
                 lives = Math.min(lives + 1, MAX_LIVES);
+                soundManager.play("life_gain");
                 break;
             default:
                 break;
@@ -761,6 +761,12 @@ public class GameplayScene extends Scene {
         for (Ball ballRef : balls) {
             ballRef.setFire(FIRE_BALL_DURATION_SECONDS);
         }
+        soundManager.play("fire_ball");
+    }
+
+    private void activatePaddleGun() {
+        paddleGunSystem.activate();
+        soundManager.play("paddle_gun");
     }
 
     private void handleLevelCompletion() {
@@ -769,8 +775,6 @@ public class GameplayScene extends Scene {
 
         stageCleared = true;
         awaitingLaunch = true;
-
-        // Stop stage music when level is completed
         StageMusicManager.getInstance().stop();
 
         PlayerProfile profile = context.getProfileManager().getActiveProfile();
@@ -813,8 +817,6 @@ public class GameplayScene extends Scene {
         profile.setCurrentLevelId(activeLevel.id());
         context.getProfileManager().saveProfile();
         gameOver = true;
-
-        // Stop stage music when game is completed
         StageMusicManager.getInstance().stop();
 
         statusMessage = localization.translate("gameplay.message.victory");
@@ -824,11 +826,11 @@ public class GameplayScene extends Scene {
         lives--;
         paddleGunSystem.reset();
         pendingBalls.clear();
+        soundManager.stopAll();
         if (lives <= 0) {
             balls.clear();
             gameOver = true;
 
-            // Stop stage music when game over
             soundManager.stop("stage");
 
             statusMessage = localization.translate("gameplay.message.gameOver");

@@ -22,8 +22,13 @@ public class StageMusicManager {
     }
 
     public void playStageMusic(String musicId, String resourcePath) {
-        if (isPlaying && musicId.equals(currentStageMusic)) {
-            return; // Already playing this music
+        if (isPlaying && !isPaused && musicId.equals(currentStageMusic)) {
+            return;
+        }
+
+        if (isPaused && musicId.equals(currentStageMusic)) {
+            resume();
+            return;
         }
 
         // Stop current music if different

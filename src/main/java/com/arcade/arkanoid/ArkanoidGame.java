@@ -7,6 +7,7 @@ import com.arcade.arkanoid.gameplay.GameplayScene;
 import com.arcade.arkanoid.menu.MainMenuScene;
 import com.arcade.arkanoid.menu.PauseScene;
 import com.arcade.arkanoid.menu.ProfileDetailScene;
+import com.arcade.arkanoid.menu.TutorialScene;
 import com.arcade.arkanoid.menu.worldmap.WorldMapScene;
 import com.arcade.arkanoid.menu.save.SaveMenuScene;
 import com.arcade.arkanoid.menu.shop.ShopScene;
@@ -21,6 +22,7 @@ public class ArkanoidGame extends Game {
     public static final String SCENE_PROFILE = "profile";
     public static final String SCENE_SHOP = "shop";
     public static final String SCENE_SETTINGS = "settings";
+    public static final String SCENE_TUTORIAL = "tutorial";
 
     public ArkanoidGame() {
         super(GameConfig.defaultConfig());
@@ -36,6 +38,7 @@ public class ArkanoidGame extends Game {
         sceneManager.register(SCENE_PROFILE, ProfileDetailScene::new);
         sceneManager.registerPersistent(SCENE_SHOP, ShopScene::new);
         sceneManager.register(SCENE_SETTINGS, SettingsScene::new);
+        sceneManager.register(SCENE_TUTORIAL, TutorialScene::new);
     }
 
     @Override
