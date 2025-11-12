@@ -2,9 +2,10 @@ package com.arcade.arkanoid.menu;
 
 import com.arcade.arkanoid.ArkanoidGame;
 import com.arcade.arkanoid.engine.core.GameContext;
-import com.arcade.arkanoid.engine.scene.Scene;
 import com.arcade.arkanoid.engine.input.InputManager;
+import com.arcade.arkanoid.engine.scene.Scene;
 import com.arcade.arkanoid.engine.audio.BackgroundMusicManager;
+import com.arcade.arkanoid.localization.LocalizationService;
 import com.arcade.arkanoid.profile.PlayerProfile;
 
 import java.awt.*;
@@ -16,7 +17,6 @@ import java.time.ZoneOffset;
 
 /**
  * Scene displaying detailed player profile information with statistics.
- * Features a sci-fi themed UI with animated background and cyan borders.
  */
 public class ProfileDetailScene extends Scene {
     private static final Font TITLE_FONT = new Font("BoldPixels", Font.BOLD, 60);
@@ -25,6 +25,7 @@ public class ProfileDetailScene extends Scene {
     private static final Font HINT_FONT = new Font("BoldPixels", Font.PLAIN, 26);
     private static final Color CYAN_LABEL = new Color(100, 180, 255);
 
+    private final LocalizationService localization;
     private BufferedImage profilePicture;
     private BufferedImage backgroundImage;
     private BufferedImage backgroundNoPlanets;
@@ -37,11 +38,11 @@ public class ProfileDetailScene extends Scene {
      */
     public ProfileDetailScene(GameContext context) {
         super(context);
+        this.localization = context.getLocalizationService();
     }
 
     @Override
     public void onEnter() {
-        // Load profile picture and backgrounds
         profilePicture = context.getAssets().getImage("profile_pic");
         context.getAssets().loadImage("background", "/graphics/background.jpg");
         context.getAssets().loadImage("background1", "/graphics/background1.jpg");
@@ -49,7 +50,6 @@ public class ProfileDetailScene extends Scene {
         backgroundNoPlanets = context.getAssets().getImage("background1");
         animationTime = 0;
 
-        // Start background music using singleton
         BackgroundMusicManager musicManager = BackgroundMusicManager.getInstance();
         musicManager.setVolume(context.getSettingsManager().getMusicVolume() / 100f);
         musicManager.playTheme("menu_theme", "/sounds/theme_song.mp3");
@@ -89,7 +89,8 @@ public class ProfileDetailScene extends Scene {
         PlayerProfile profile = context.getProfileManager().getActiveProfile();
 
         // Title
-        drawCenteredText(g, "PLAYER PROFILE", TITLE_FONT, Color.WHITE, panelX + panelW / 2, panelY + 50);
+        drawCenteredText(g, localization.translate("profile.title"), TITLE_FONT, Color.WHITE,
+                panelX + panelW / 2, panelY + 50);
 
         // Profile picture
         int picSize = 120, picX = panelX + (panelW - picSize) / 2, picY = panelY + 80;
@@ -98,23 +99,48 @@ public class ProfileDetailScene extends Scene {
         // Display name and ID
         drawCenteredText(g, profile.getDisplayName(), new Font("BoldPixels", Font.BOLD, 30),
                 Color.WHITE, panelX + panelW / 2, picY + picSize + 40);
-        drawCenteredText(g, "ID: " + profile.getPlayerId().substring(0, 8) + "...",
+        String playerId = profile.getPlayerId();
+        if (playerId.length() > 8) {
+            playerId = playerId.substring(0, 8);
+        }
+        drawCenteredText(g, localization.translate("profile.idLabel", playerId),
                 new Font("Orbitron", Font.PLAIN, 14), new Color(150, 150, 150),
                 panelX + panelW / 2, picY + picSize + 60);
 
         // Stats
-        int statsY = picY + picSize + 100, leftX = panelX + panelW / 4, rightX = panelX + 3 * panelW / 4, rowH = 70;
-        drawStat(g, "LIVES", profile.getLives() + " / " + profile.getMaxLives(), leftX, statsY);
-        drawStat(g, "COINS", String.valueOf(profile.getCoins()), leftX, statsY + rowH);
-        drawStat(g, "ENERGY", profile.getEnergy() + " / " + profile.getMaxEnergy(), leftX, statsY + rowH * 2);
-        drawStat(g, "STREAK", profile.getDailyStreak() + " DAYS", rightX, statsY);
-        drawStat(g, "UNLOCKED", profile.getUnlockedLevelIds().size() + " LEVELS", rightX, statsY + rowH);
-        drawStat(g, "COMPLETED", profile.getCompletedLevelIds().size() + " LEVELS", rightX, statsY + rowH * 2);
+        int statsY = picY + picSize + 100;
+        int leftX = panelX + panelW / 4;
+        int rightX = panelX + 3 * panelW / 4;
+        int rowH = 70;
+        drawStat(g,
+                localization.translate("profile.stat.lives"),
+                localization.translate("profile.stat.lives.value", profile.getLives(), profile.getMaxLives()),
+                leftX, statsY);
+        drawStat(g,
+                localization.translate("profile.stat.coins"),
+                localization.translate("profile.stat.coins.value", profile.getCoins()),
+                leftX, statsY + rowH);
+        drawStat(g,
+                localization.translate("profile.stat.energy"),
+                localization.translate("profile.stat.energy.value", profile.getEnergy(), profile.getMaxEnergy()),
+                leftX, statsY + rowH * 2);
+        drawStat(g,
+                localization.translate("profile.stat.streak"),
+                localization.translate("profile.stat.streak.value", profile.getDailyStreak()),
+                rightX, statsY);
+        drawStat(g,
+                localization.translate("profile.stat.unlocked"),
+                localization.translate("profile.stat.unlocked.value", profile.getUnlockedLevelIds().size()),
+                rightX, statsY + rowH);
+        drawStat(g,
+                localization.translate("profile.stat.completed"),
+                localization.translate("profile.stat.completed.value", profile.getCompletedLevelIds().size()),
+                rightX, statsY + rowH * 2);
 
         // Daily bonus and hint
         drawCenteredText(g, getDailyBonusStatus(profile), HINT_FONT, new Color(200, 200, 255),
                 panelX + panelW / 2, statsY + rowH * 3 + 20);
-        drawCenteredText(g, "Press ESC or ENTER to close", HINT_FONT, new Color(150, 150, 150),
+        drawCenteredText(g, localization.translate("profile.hint.close"), HINT_FONT, new Color(150, 150, 150),
                 panelX + panelW / 2, panelY + panelH - 30);
     }
 
@@ -155,19 +181,27 @@ public class ProfileDetailScene extends Scene {
      */
     private String getDailyBonusStatus(PlayerProfile profile) {
         long lastClaim = profile.getLastDailyBonusEpochSeconds();
-        if (lastClaim <= 0)
-            return "🎁 Daily Bonus: Available Now!";
+        if (lastClaim <= 0) {
+            return localization.translate("profile.dailyBonus.available");
+        }
 
         Instant now = Instant.now();
         Instant nextClaim = Instant.ofEpochSecond(lastClaim)
                 .atZone(ZoneOffset.UTC).toLocalDate().plusDays(1)
                 .atStartOfDay().toInstant(ZoneOffset.UTC);
 
-        if (!now.isBefore(nextClaim))
-            return "🎁 Daily Bonus: Ready to claim!";
+        if (!now.isBefore(nextClaim)) {
+            return localization.translate("profile.dailyBonus.ready");
+        }
 
-        long sec = Math.max(0, Duration.between(now, nextClaim).getSeconds());
-        return String.format("🎁 Next Bonus in: %02d:%02d:%02d", sec / 3600, (sec % 3600) / 60, sec % 60);
+        long secondsRemaining = Math.max(0, Duration.between(now, nextClaim).getSeconds());
+        long hours = secondsRemaining / 3600;
+        long minutes = (secondsRemaining % 3600) / 60;
+        long seconds = secondsRemaining % 60;
+        return localization.translate("profile.dailyBonus.countdown",
+                String.format("%02d", hours),
+                String.format("%02d", minutes),
+                String.format("%02d", seconds));
     }
 
     /**
